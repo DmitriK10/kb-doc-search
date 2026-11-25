@@ -226,6 +226,7 @@ async def metrics(days: int = 30) -> dict:
                 "success": d[1], "stale": d[2], "refusal": d[3],
                 "deflection_rate": round((d[1] + d[2]) / dt, 4) if dt else 0,
                 "refusal_rate": round(d[3] / dt, 4) if dt else 0,
+                "stale_rate": round(d[2] / dt, 4) if dt else 0,
                 "useful": d[4], "useless": d[5],
                 "useful_rate": (round(d[4] / (d[4] + d[5]), 4)
                                 if (d[4] + d[5]) else 0),
@@ -234,6 +235,111 @@ async def metrics(days: int = 30) -> dict:
             }
             cur.close()
         return out
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(500, str(exc)[:200]) from exc
+
+
+@app.get("/api/clusters")
+async def clusters() -> dict:
+    """Белые пятна: зоны, метки из онтологии, владельцы.
+
+    Отдаёт последний прогон кластеризации. Метки берутся из онтологии
+    владельцев, а не из ближайшего документа: центроид отказов лежит вне
+    пространства документов, и ближайший чанк — случайный сосед.
+    """
+    try:
+        import psycopg
+        with psycopg.connect(_dsn(), autocommit=True) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT run_id, computed_at, window_from, k, n_vectors
+                FROM cluster_runs ORDER BY run_id DESC LIMIT 1
+            """)
+            run = cur.fetchone()
+            if not run:
+                return {"run": None, "zones": {}, "clusters": []}
+
+            cur.execute("""
+                SELECT zone, label, size, refusal_share, useless_share,
+                       owner_role, status,
+                       nearest_chunks -> 0 ->> 'doc_title' AS nearest_doc,
+                       nearest_chunks -> 0 ->> 'section_path' AS nearest_sec
+                FROM query_clusters
+                WHERE run_id = %s
+                ORDER BY size DESC
+            """, (run[0],))
+            rows = cur.fetchall()
+            cur.close()
+
+        zones: dict[str, int] = {}
+        items = []
+        for r in rows:
+            zones[r[0]] = zones.get(r[0], 0) + 1
+            items.append({
+                "zone": r[0],
+                "label": r[1],
+                "size": r[2],
+                "refusal_share": round(float(r[3]), 3),
+                "useless_share": round(float(r[4]), 3),
+                "owner_role": r[5],
+                "status": r[6],
+                "nearest_doc": r[7],
+                "nearest_section": r[8],
+            })
+
+        return {
+            "run": {
+                "run_id": run[0],
+                "computed_at": run[1].isoformat(),
+                "window_from": run[2].isoformat(),
+                "k": run[3],
+                "n_vectors": run[4],
+            },
+            "zones": zones,
+            "clusters": items,
+        }
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(500, str(exc)[:200]) from exc
+
+
+@app.get("/api/alerts")
+async def alerts(limit: int = 8) -> dict:
+    """Лента алертов владельцам: pending и sent.
+
+    Запасная сцена для демо: показывает, что сигнал о белом пятне дошёл
+    до владельца. Алерты настоящие — их создала кластеризация, статус
+    меняет notifier.
+    """
+    try:
+        import psycopg
+        with psycopg.connect(_dsn(), autocommit=True) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT a.id, a.reason, a.status, a.created_day, a.sent_at,
+                       a.payload ->> 'topic' AS topic,
+                       a.payload ->> 'zone' AS zone,
+                       a.payload ->> 'owner_role' AS owner_role,
+                       (a.payload ->> 'size')::int AS size
+                FROM knowledge_alerts a
+                ORDER BY a.created_day DESC, a.id DESC
+                LIMIT %s
+            """, (limit,))
+            rows = cur.fetchall()
+            cur.execute("""
+                SELECT status, count(*) FROM knowledge_alerts GROUP BY status
+            """)
+            counts = dict(cur.fetchall())
+            cur.close()
+
+        return {
+            "counts": counts,
+            "alerts": [{
+                "id": r[0], "reason": r[1], "status": r[2],
+                "created_day": str(r[3]),
+                "sent_at": r[4].isoformat() if r[4] else None,
+                "topic": r[5], "zone": r[6], "owner_role": r[7], "size": r[8],
+            } for r in rows],
+        }
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(500, str(exc)[:200]) from exc
 
@@ -353,6 +459,8 @@ INDEX_HTML = """<!DOCTYPE html>
   <div id="out"></div>
 
   <div class="stats" id="stats"></div>
+  <div class="stats" id="clusters"></div>
+  <div class="stats" id="alerts"></div>
 
   <div class="note" id="note"></div>
 </div>
@@ -544,12 +652,72 @@ async function loadStats() {
         [(d.deflection_rate * 100).toFixed(0) + '%', 'отвечено'],
         [(d.refusal_rate * 100).toFixed(0) + '%', 'отказов'],
         [d.p50_ms + ' мс', 'медиана'],
+        [(d.stale_rate * 100).toFixed(1) + '%', 'версия устарела'],
         [d.hours_saved + ' ч', 'сэкономлено'],
         [s.documents ? s.documents.filter(x => x.is_active).length : 0, 'документов']
       ].map(([v, k]) => '<div class="stat"><div class="v">' + esc(v) +
                         '</div><div class="k">' + esc(k) + '</div></div>').join('');
     }
     document.getElementById('stats').innerHTML = html;
+
+    // Белые пятна: отдельная таблица. Зоны, метки из онтологии, владельцы.
+    try {
+      const c = await fetch(api('api/clusters')).then(r => r.json());
+      const box = document.getElementById('clusters');
+      if (!c.clusters || !c.clusters.length) {
+        box.innerHTML = '';
+      } else {
+        const zoneName = {red: 'нет регламента', yellow: 'отвечает, но не помогает',
+                          green: 'отвечает уверенно'};
+        const zoneCls = {red: 'b-bad', yellow: 'b-warn', green: 'b-ok'};
+        let h = '<div style="grid-column:1/-1;background:transparent;' +
+                'border-color:transparent;padding:8px 0 4px;color:var(--dim);' +
+                'font-size:12px">Белые пятна: темы, по которым чаще всего ' +
+                'нет ответа (прогон ' + esc(c.run.run_id) + ', ' +
+                c.run.n_vectors + ' запросов)</div>';
+        h += '<div style="grid-column:1/-1" class="card">';
+        c.clusters.slice(0, 6).forEach(x => {
+          h += '<div style="display:flex;gap:10px;align-items:baseline;' +
+               'padding:7px 0;border-bottom:1px solid var(--line)">' +
+               '<span class="badge ' + (zoneCls[x.zone] || 'b-warn') + '">' +
+               esc(zoneName[x.zone] || x.zone) + '</span>' +
+               '<span style="flex:1">' + esc(x.label) + '</span>' +
+               '<span style="color:var(--dim);font-size:12px">' +
+               esc(x.size) + ' запр. · ' +
+               (x.owner_role ? esc(x.owner_role) : 'владелец не задан') +
+               '</span></div>';
+        });
+        h += '</div>';
+        box.innerHTML = h;
+      }
+    } catch (e) { /* панель не критична */ }
+
+    // Лента алертов: сигнал дошёл до владельца.
+    try {
+      const a = await fetch(api('api/alerts')).then(r => r.json());
+      const box = document.getElementById('alerts');
+      if (!a.alerts || !a.alerts.length) { box.innerHTML = ''; }
+      else {
+        let h = '<div style="grid-column:1/-1;background:transparent;' +
+                'border-color:transparent;padding:8px 0 4px;color:var(--dim);' +
+                'font-size:12px">Уведомления владельцам базы знаний ' +
+                '(sent: ' + esc((a.counts||{}).sent || 0) +
+                ', в очереди: ' + esc((a.counts||{}).pending || 0) + ')</div>';
+        h += '<div style="grid-column:1/-1" class="card">';
+        a.alerts.slice(0, 5).forEach(x => {
+          const isSent = x.status === 'sent';
+          h += '<div style="display:flex;gap:10px;align-items:baseline;' +
+               'padding:7px 0;border-bottom:1px solid var(--line)">' +
+               '<span class="badge ' + (isSent ? 'b-ok' : 'b-warn') + '">' +
+               (isSent ? 'ОТПРАВЛЕНО' : 'В ОЧЕРЕДИ') + '</span>' +
+               '<span style="flex:1">' + esc(x.topic || '—') + '</span>' +
+               '<span style="color:var(--dim);font-size:12px">' +
+               esc(x.owner_role || 'владелец не задан') + '</span></div>';
+        });
+        h += '</div>';
+        box.innerHTML = h;
+      }
+    } catch (e) { /* панель не критична */ }
     const cfgNote = s.threshold
       ? 'Порог отказа ' + Number(s.threshold).toFixed(2) +
         ', откалиброван на ' + esc(s.calibrated_on || '—') +
