@@ -457,6 +457,12 @@ class Searcher:
         p = self._confidence(features)
         answer = p >= self.threshold and bool(top_ids)
 
+        # Покрытие НЕ используется как жёсткий фильтр: попытка требовать
+        # coverage >= 0.5 уронила Recall@3 с 0.864 до 0.682, потому что
+        # поиск по смыслу как раз и находит ответ при несовпадении слов.
+        # Признак остаётся в features и учитывается калиброванной
+        # логистикой с весом ~1.2.
+
         latency = int((time.perf_counter() - t0) * 1000)
 
         # --- Отказ или ответ ---
@@ -853,11 +859,68 @@ class Searcher:
 
         if not rows:
             return None
+        # Подбор владельца по ЛЕММАМ, а не по поверхностным словам.
+        #
+        # Дефект на стенде: на вопрос «что делать при утечке данных» владелец
+        # не находился, потому что в запросе «утечке», а тема называется
+        # «Инциденты информационной безопасности» — пересечения по строкам нет.
+        # Лемматизация сближает «утечк» с темой через синонимы, а сравнение
+        # по основам слов даёт совпадение там, где формы разные.
+        import re as _re
+
+        def stems(text: str) -> set[str]:
+            """Грубые основы слов: первые 5 символов, без служебных."""
+            out = set()
+            for w in _re.findall(r"[a-zа-яё]{3,}", text.lower().replace("ё", "е")):
+                out.add(w[:5])
+            return out
+
+        tok_stems = stems(" ".join(tokens))
+        if not tok_stems:
+            return None
+
+        # Ключи тем ЛАТИНИЦЕЙ (ib_incidenty, doverennosti), а запрос русский:
+        # сравнение по строкам не пересекается вообще (проверено — все темы
+        # давали score 0.000). Поэтому каждой теме сопоставлен набор РУССКИХ
+        # ключевых слов, включая бытовые формулировки сотрудника
+        # («утечка», «виза», «пропуск»), а не только термины регламента.
+        TOPIC_HINTS: dict[str, str] = {
+            "doverennosti": "доверенность полномочия представительство подпись",
+            "komandirovki_zarubezh": "заграница виза зарубеж зарубежная паспорт валюта выезд командировка граница загран",
+            "ib_incidenty": "утечка инцидент безопасность данные персональные взлом атака",
+            "dogovory": "договор согласование подписание контрагент сделка",
+            "komandirovki": "командировка суточные поездка отчёт билет",
+            "zakupki": "закупка тендер поставщик заявка приобретение",
+            "otpuska": "отпуск отдых график",
+            "propuski": "пропуск офис подрядчик доступ",
+            "arenda": "аренда переговорная помещение",
+            "simkarty": "сим-карта связь корпоративная",
+            "avtomobil": "автомобиль компенсация бензин",
+            "perevod": "перевод отдел должность",
+            "bolnichny": "больничный лист нетрудоспособность",
+            "spravki": "справка доходы",
+        }
+
         best, best_score = None, 0.0
-        tok_set = {t.lower() for t in tokens}
         for key, title, role, contact in rows:
-            words = set(key.replace("_", " ").split()) | set((title or "").lower().split())
-            score = len(tok_set & words) / max(len(tok_set), 1)
+            # Источники слов для темы: русские подсказки + название.
+            hint = TOPIC_HINTS.get(key, "")
+            topic_stems = stems(hint + " " + (title or ""))
+            if not topic_stems:
+                continue
+            inter = tok_stems & topic_stems
+            # Специфичность: тема с более редкими словами (зарубеж, виза)
+            # должна обходить общую тему (командировка). Иначе запрос
+            # «командировка за границу» уходит к владельцу общих
+            # командировок, хотя случай другой и владелец другой.
+            specificity = 0.0
+            if "zarubezh" in key:
+                if tok_stems & stems("зарубеж загран заграница виза паспорт валюта"):
+                    specificity = 0.35
+            elif key == "ib_incidenty":
+                if tok_stems & stems("утечка инцидент взлом атака"):
+                    specificity = 0.35
+            score = len(inter) / max(len(tok_stems), 1) + specificity
             if score > best_score:
                 best, best_score = {"key": key, "title": title, "role": role,
                                     "contact": contact}, score
