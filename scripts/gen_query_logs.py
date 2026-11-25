@@ -193,9 +193,15 @@ def main() -> int:
 
         for _ in range(n):
             roll = rnd.random()
-            if roll < 0.22:
+            # 10% — точный повтор ранее заданного вопроса. Так работает
+            # реальная нагрузка: разные люди спрашивают одно и то же
+            # дословно. Без этого кэш в демо-истории давал 0% хитов,
+            # и панель показывала неработающий кэш.
+            if rows and roll < 0.10:
+                q = rnd.choice(rows)["query"]
+            elif roll < 0.30:
                 q = rnd.choice(OUT_OF_SCOPE)
-            elif roll < 0.28:
+            elif roll < 0.36:
                 q = rnd.choice(STALE)
             else:
                 q = rnd.choice(IN_SCOPE)
@@ -207,11 +213,23 @@ def main() -> int:
     rows.sort(key=lambda r: r["ts"])
     print(f"сгенерировано записей: {len(rows)}")
 
+    # TTL-эмуляция: кэш чистится при смене суток, как и в проде
+    # (expires_at = now() + 24 часа). Без этого все повторы за 30 дней
+    # попадали в один кэш и hit rate выходил 68% вместо реальных 10-20%.
+    current_day = None
+
     # Прогон через НАСТОЯЩИЙ поиск: эмбеддинги и решения реальные.
     with psycopg.connect(args.dsn, autocommit=False) as conn:
         cur = conn.cursor()
         for i, r in enumerate(rows, 1):
-            ans = searcher.search(r["query"], user_id=r["user"], use_cache=False)
+            # Смена суток -> кэш истекает, как в реальной системе.
+            day = r["ts"].date()
+            if current_day is not None and day != current_day:
+                cur.execute("DELETE FROM answer_cache")
+                conn.commit()
+            current_day = day
+
+            ans = searcher.search(r["query"], user_id=r["user"], use_cache=True)
             qvec = enc.encode_one(r["query"])
             qhmac = hashlib.sha256(
                 f"{r['query']}|{r['ts'].isoformat()}".encode()
@@ -234,13 +252,14 @@ def main() -> int:
                      cache_hit, user_id_hash, user_feedback, feedback_at,
                      is_simulated)
                 VALUES (%s, %s, %s, %s::halfvec, %s, %s, %s, %s, %s::jsonb,
-                        %s, false, %s, %s, %s, true)
+                        %s, %s, %s, %s, %s, true)
             """, (
                 r["ts"], qhmac, len(r["query"]), to_pgvector(qvec),
                 ans.response_type, ans.refusal_reason, ans.confidence,
                 ans.features.get("max_sentence_sim"),
                 json.dumps([s.to_dict() for s in ans.sources], ensure_ascii=False),
                 ans.latency_ms,
+                ans.cache_hit,
                 hashlib.sha256(r["user"].encode()).hexdigest(),
                 fb, r["ts"] if fb is not None else None,
             ))

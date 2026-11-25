@@ -208,6 +208,7 @@ async def metrics(days: int = 30) -> dict:
                        count(*) FILTER (WHERE response_type = 'refusal'),
                        count(*) FILTER (WHERE user_feedback = 1),
                        count(*) FILTER (WHERE user_feedback = -1),
+                       count(*) FILTER (WHERE cache_hit),
                        coalesce(percentile_cont(0.5) WITHIN GROUP (
                            ORDER BY latency_ms), 0),
                        coalesce(sum(CASE WHEN response_type <> 'refusal'
@@ -228,10 +229,11 @@ async def metrics(days: int = 30) -> dict:
                 "refusal_rate": round(d[3] / dt, 4) if dt else 0,
                 "stale_rate": round(d[2] / dt, 4) if dt else 0,
                 "useful": d[4], "useless": d[5],
+                "cache_hits": d[6],
                 "useful_rate": (round(d[4] / (d[4] + d[5]), 4)
                                 if (d[4] + d[5]) else 0),
-                "p50_ms": round(float(d[6]), 1),
-                "hours_saved": round(float(d[7]) / 60.0, 1),
+                "p50_ms": round(float(d[7]), 1),
+                "hours_saved": round(float(d[8]) / 60.0, 1),
             }
             cur.close()
         return out
