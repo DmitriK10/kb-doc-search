@@ -131,13 +131,17 @@ def main() -> int:
     cur.execute("CREATE EXTENSION IF NOT EXISTS btree_gist")
     cur.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
     cur.execute("CREATE EXTENSION IF NOT EXISTS pgcrypto")
-    # Чистим данные предыдущего прогона: тест должен быть повторяемым.
-    cur.execute("""
-        TRUNCATE answer_cache, document_changes, knowledge_alerts,
-                 knowledge_owners, query_clusters, cluster_runs, query_logs,
-                 chunk_sentences, chunks, documents
-        RESTART IDENTITY CASCADE
-    """)
+    # ВАЖНО: тест работает в ОТДЕЛЬНОЙ СХЕМЕ и не трогает продовые данные.
+    #
+    # Раньше здесь был TRUNCATE рабочих таблиц. На стенде это уничтожило
+    # корпус и онтологию: поиск вернул 0 результатов, eval показал
+    # Recall@3 = 0.000. Тест не имеет права стирать прод.
+    #
+    # Решение: своя схема, свой search_path. Все таблицы создаются в ней
+    # и удаляются вместе с ней в конце. Продовая public остаётся нетронутой.
+    cur.execute("DROP SCHEMA IF EXISTS kb_test CASCADE")
+    cur.execute("CREATE SCHEMA kb_test")
+    cur.execute("SET search_path TO kb_test, public")
     conn.commit()
     cur.close()
 
@@ -382,13 +386,9 @@ def main() -> int:
         SKIPPED.append("halfvec / <=> / HNSW (нет pgvector на этой машине)")
         print("  [SKIP] halfvec, <=>, HNSW — требуют pgvector")
 
-    # Уборка: оставляем схему, чистим данные, чтобы следующий запуск был чистым.
-    cur.execute("""
-        TRUNCATE answer_cache, document_changes, knowledge_alerts,
-                 knowledge_owners, query_clusters, cluster_runs, query_logs,
-                 chunk_sentences, chunks, documents
-        RESTART IDENTITY CASCADE
-    """)
+    # Уборка: удаляем тестовую схему целиком. Продовые данные не тронуты.
+    cur.execute("SET search_path TO public")
+    cur.execute("DROP SCHEMA IF EXISTS kb_test CASCADE")
     conn.commit()
     cur.close()
     conn.close()
