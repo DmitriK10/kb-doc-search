@@ -1,0 +1,141 @@
+"""Экстрактор версий и номеров документов для маршрутизации в stale-флоу.
+
+Зачем отдельный модуль. Правка К1 убирает числовые токены из AND-цепочек FTS:
+«2.3» в полнотексте почти всегда обнуляет выдачу, потому что версия живёт
+в метаданных documents.version, а не в тексте пунктов. Но сигнал ценный:
+если сотрудник спрашивает «что было в регламенте 2.3», это осознанный вопрос
+про версию, и его надо вести в stale-флоу (B1), а не в обычный поиск.
+
+Решение принято по трём причинам:
+  1. детерминированно — регулярка + один lookup в documents, без порогов;
+  2. дешево — ~0.05 мс, RAM 0;
+  3. даёт отдельный демо-кадр: «вы спрашиваете про v2.3, она недействительна
+     с 01.03.2026, действующая — v3.1».
+
+ВАЖНО про ложные срабатывания. «Приказ 45» — это номер документа, а не версия,
+и маршрутизировать его в stale нельзя: у приказа нет версий, есть только номер.
+Поэтому различаем:
+  - версия:   «2.3», «v2.3», «версия 3.1», «редакция 2.0»  -> stale-кандидат
+  - номер:    «приказ 45», «№ 45», «договор 12/2026»       -> поиск по doc_code
+Стоимость ошибки разная, поэтому паттерны раздельные.
+"""
+
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+
+# Версия: необязательный контекст + N.M(.K...).
+# Требуем минимум одну точку: «2» — это число, «2.3» — версия.
+#
+# Контекстные слова даны СТЕММАМИ («верси», «редакци», «регламент»), потому что
+# в живом вопросе они стоят в косвенном падеже: «в регламентЕ 2.3»,
+# «по версиИ 3.1». Точная словоформа здесь не годится.
+_VERSION_CTX = re.compile(
+    r"(?:верси\w*|редакци\w*|version|ред\.?|регламент\w*|положени\w*|"
+    r"документ\w*|приказ\w*)\s*(?:№|номер)?\s*:?\s*[vв]?\s*(\d+(?:\.\d+)+)",
+    re.IGNORECASE,
+)
+_VERSION_BARE = re.compile(r"(?<![\d.])([vв]\d+(?:\.\d+)+)(?![\d.])", re.IGNORECASE)
+_VERSION_NUM = re.compile(r"(?<![\d.])(\d+\.\d+(?:\.\d+)*)(?![\d.])")
+
+# Номер документа: «приказ 45», «№ 45», «договор 12/2026», «приказа №45-А»
+_DOCNUM_CTX = re.compile(
+    r"(?:приказ|распоряжение|договор|контракт|заявка|письмо|акт|счёт|счет)\s*"
+    r"(?:№|номер|N)?\s*(\d+(?:[-/]\d+)*(?:-[А-ЯЁA-Zа-яёa-z])?)",
+    re.IGNORECASE,
+)
+_DOCNUM_SIGN = re.compile(r"№\s*(\d+(?:[-/]\d+)*(?:-[А-ЯЁA-Zа-яёa-z])?)")
+
+
+@dataclass(slots=True, frozen=True)
+class VersionHit:
+    """Найденная в запросе версия документа."""
+
+    raw: str          # как написано в запросе: 'v2.3'
+    version: str      # нормализованная: '2.3'
+    explicit: bool    # True, если рядом стоит слово «версия/редакция»
+
+
+@dataclass(slots=True, frozen=True)
+class DocNumberHit:
+    """Найденный номер документа (не версия)."""
+
+    raw: str
+    number: str
+
+
+def normalize_version(raw: str) -> str:
+    """'v2.3' -> '2.3', 'В2.3' -> '2.3', '2.3 ' -> '2.3'."""
+    return raw.strip().lstrip("vVвВ").strip()
+
+
+def extract_versions(text: str) -> list[VersionHit]:
+    """Все версии из запроса, без дублей, в порядке появления.
+
+    Порядок проверок важен: контекстные формы («версия 2.3») приоритетны,
+    потому что они дают точную границу числа. Затем «v2.3» с буквенным
+    префиксом — он однозначно указывает на версию. Последними — «голые»
+    N.M, которые чаще всего и есть версия в деловом вопросе, но могут быть
+    и номером пункта («п. 4.2»), поэтому помечаются explicit=False.
+    """
+    found: list[VersionHit] = []
+    seen: set[str] = set()
+
+    def add(raw: str, explicit: bool) -> None:
+        ver = normalize_version(raw)
+        if not ver or ver in seen:
+            return
+        seen.add(ver)
+        found.append(VersionHit(raw=raw, version=ver, explicit=explicit))
+
+    for m in _VERSION_CTX.finditer(text):
+        add(m.group(1), True)
+    for m in _VERSION_BARE.finditer(text):
+        add(m.group(1), True)
+    for m in _VERSION_NUM.finditer(text):
+        add(m.group(1), False)
+
+    return found
+
+
+def extract_doc_numbers(text: str) -> list[DocNumberHit]:
+    """Номера документов: «приказ 45», «№ 45-А», «договор 12/2026»."""
+    found: list[DocNumberHit] = []
+    seen: set[str] = set()
+
+    def add(raw: str) -> None:
+        num = raw.strip()
+        if not num or num in seen:
+            return
+        seen.add(num)
+        found.append(DocNumberHit(raw=raw, number=num))
+
+    for m in _DOCNUM_CTX.finditer(text):
+        add(m.group(1))
+    for m in _DOCNUM_SIGN.finditer(text):
+        add(m.group(1))
+    return found
+
+
+def is_likely_section_ref(text: str, version: str) -> bool:
+    """Похоже ли «4.2» на ссылку на пункт, а не на версию документа.
+
+    «в пункте 4.2 написано» — это ссылка на раздел, искать надо в текущей
+    версии, а не в старой версии документа. Признак — слово «пункт/раздел/
+    статья» перед числом В ЛЮБОМ ПАДЕЖЕ, поэтому основа без окончания:
+    «пункт», «пункте», «пункта», «пункту».
+
+    Порядок слов в русском свободный, поэтому проверяем и обратный вариант:
+    «4.2 пункта 3» тоже ссылка на пункт.
+    """
+    num = re.escape(version)
+    forward = (
+        rf"(?:пункт\w*|подпункт\w*|раздел\w*|стать\w*|абзац\w*|глав\w*|"
+        rf"п\.|ст\.|гл\.)\s*{num}"
+    )
+    backward = rf"{num}\s*(?:пункт\w*|подпункт\w*|раздел\w*|стать\w*|абзац\w*)"
+    return (
+        re.search(forward, text, re.IGNORECASE) is not None
+        or re.search(backward, text, re.IGNORECASE) is not None
+    )

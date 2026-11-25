@@ -1,0 +1,92 @@
+{"query": "кто подписывает агентский договор свыше миллиона", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "3.2"}, "out_of_scope": false}
+{"query": "кто подписывает договоры до ста тысяч рублей", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "какой срок согласования договора", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "кто подписывает договор от ста тысяч до миллиона", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "3.3"}, "out_of_scope": false}
+{"query": "кто подписывает договоры от имени компании", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "3.4"}, "out_of_scope": false}
+{"query": "что делать при разногласиях по проекту договора", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "2.3"}, "out_of_scope": false}
+{"query": "какие договоры подписывает финансовый директор", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "3.2"}, "out_of_scope": false}
+{"query": "у кого согласовывается проект договора", "gold": {"doc_title": "Регламент согласования и подписания договоров", "section_path": "2.1"}, "out_of_scope": false}
+
+{"query": "размер суточных в командировке", "gold": {"doc_title": "Положение о служебных командировках", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "за сколько дней оформляется командировка", "gold": {"doc_title": "Положение о служебных командировках", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "когда сдавать отчёт после командировки", "gold": {"doc_title": "Положение о служебных командировках", "section_path": "4.1"}, "out_of_scope": false}
+{"query": "когда возмещают расходы на проезд", "gold": {"doc_title": "Положение о служебных командировках", "section_path": "3.2"}, "out_of_scope": false}
+{"query": "сколько платят суточных за день командировки", "gold": {"doc_title": "Положение о служебных командировках", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "какие документы прикладываются к отчёту о командировке", "gold": {"doc_title": "Положение о служебных командировках", "section_path": "4.2"}, "out_of_scope": false}
+
+{"query": "с какой суммы закупки проводят через тендер", "gold": {"doc_title": "Регламент закупок товаров и услуг", "section_path": "2.3"}, "out_of_scope": false}
+{"query": "сколько поставщиков нужно для запроса предложений", "gold": {"doc_title": "Регламент закупок товаров и услуг", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "до какой суммы можно купить у единственного поставщика", "gold": {"doc_title": "Регламент закупок товаров и услуг", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "сколько рассматривают заявку на закупку", "gold": {"doc_title": "Регламент закупок товаров и услуг", "section_path": "3.2"}, "out_of_scope": false}
+{"query": "кто согласует заявку на закупку", "gold": {"doc_title": "Регламент закупок товаров и услуг", "section_path": "3.1"}, "out_of_scope": false}
+
+{"query": "сколько действует соглашение о конфиденциальности", "gold": {"doc_title": "Регламент работы с соглашениями о конфиденциальности", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "кто готовит проект NDA", "gold": {"doc_title": "Регламент работы с соглашениями о конфиденциальности", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "можно ли менять типовой шаблон NDA", "gold": {"doc_title": "Регламент работы с соглашениями о конфиденциальности", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "когда нужно заключать NDA с контрагентом", "gold": {"doc_title": "Регламент работы с соглашениями о конфиденциальности", "section_path": "1.1"}, "out_of_scope": false}
+
+{"query": "какие требования к паролю", "gold": {"doc_title": "Политика информационной безопасности", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "можно ли пользоваться личной флешкой для рабочих данных", "gold": {"doc_title": "Политика информационной безопасности", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "как предоставляется доступ к информационным системам", "gold": {"doc_title": "Политика информационной безопасности", "section_path": "2.3"}, "out_of_scope": false}
+{"query": "как часто менять пароль", "gold": {"doc_title": "Политика информационной безопасности", "section_path": "2.1"}, "out_of_scope": false}
+
+{"query": "за сколько дней писать заявление на отпуск", "gold": {"doc_title": "Положение об отпусках", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "сколько дней отпуска в год", "gold": {"doc_title": "Положение об отпусках", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "когда утверждают график отпусков", "gold": {"doc_title": "Положение об отпусках", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "дополнительный отпуск за ненормированный день", "gold": {"doc_title": "Положение об отпусках", "section_path": "3.2"}, "out_of_scope": false}
+
+{"query": "сколько хранятся договоры в архиве", "gold": {"doc_title": "Регламент архивного хранения документов", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "сколько лет хранят кадровые документы", "gold": {"doc_title": "Регламент архивного хранения документов", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "когда документы передают в архив", "gold": {"doc_title": "Регламент архивного хранения документов", "section_path": "3.1"}, "out_of_scope": false}
+
+{"query": "как быстро нужно зафиксировать контакт с клиентом в CRM", "gold": {"doc_title": "Инструкция по работе с CRM-системой", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "какие поля обязательны в CRM", "gold": {"doc_title": "Инструкция по работе с CRM-системой", "section_path": "2.3"}, "out_of_scope": false}
+
+{"query": "при каком выполнении плана дают квартальную премию", "gold": {"doc_title": "Положение о премировании", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "положена ли премия если отработал меньше трёх месяцев", "gold": {"doc_title": "Положение о премировании", "section_path": "2.3"}, "out_of_scope": false}
+
+{"query": "сколько дней в неделю можно работать удалённо", "gold": {"doc_title": "Положение о дистанционной работе", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "кто согласует полную удалённую работу", "gold": {"doc_title": "Положение о дистанционной работе", "section_path": "2.3"}, "out_of_scope": false}
+
+{"query": "кто согласует оплату обучения дороже пятидесяти тысяч", "gold": {"doc_title": "Регламент корпоративного обучения", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "за сколько дней подавать заявку на обучение", "gold": {"doc_title": "Регламент корпоративного обучения", "section_path": "2.1"}, "out_of_scope": false}
+
+{"query": "можно ли ставить печать на пустом бланке", "gold": {"doc_title": "Инструкция по использованию печатей и штампов", "section_path": "3.2"}, "out_of_scope": false}
+{"query": "где хранятся печати компании", "gold": {"doc_title": "Инструкция по использованию печатей и штампов", "section_path": "2.1"}, "out_of_scope": false}
+
+{"query": "как быстро чинят критичные сбои в ИТ", "gold": {"doc_title": "Регламент обработки заявок в ИТ-поддержку", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "сколько ждать решения обычной заявки в ИТ", "gold": {"doc_title": "Регламент обработки заявок в ИТ-поддержку", "section_path": "2.3"}, "out_of_scope": false}
+
+{"query": "как часто проходят медосмотр", "gold": {"doc_title": "Регламент проведения медицинских осмотров", "section_path": "2.2"}, "out_of_scope": false}
+{"query": "кто платит за медосмотр сотрудника", "gold": {"doc_title": "Регламент проведения медицинских осмотров", "section_path": "2.3"}, "out_of_scope": false}
+
+{"query": "что делать при возгорании в офисе", "gold": {"doc_title": "Инструкция по пожарной безопасности", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "можно ли пользоваться лифтом при эвакуации", "gold": {"doc_title": "Инструкция по пожарной безопасности", "section_path": "2.3"}, "out_of_scope": false}
+
+{"query": "когда регистрируют входящую корреспонденцию", "gold": {"doc_title": "Регламент делопроизводства", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "срок исполнения срочных документов", "gold": {"doc_title": "Регламент делопроизводства", "section_path": "3.1"}, "out_of_scope": false}
+
+{"query": "в каких пределах возмещают ущерб компании", "gold": {"doc_title": "Регламент материальной ответственности сотрудников", "section_path": "2.1"}, "out_of_scope": false}
+{"query": "что грозит за разглашение коммерческой тайны", "gold": {"doc_title": "Положение о коммерческой тайне", "section_path": "3.1"}, "out_of_scope": false}
+{"query": "кто утверждает перечень сведений коммерческой тайны", "gold": {"doc_title": "Положение о коммерческой тайне", "section_path": "2.1"}, "out_of_scope": false}
+
+{"query": "как получить доверенность на подписание договоров", "gold": null, "out_of_scope": true, "topic": "doverennosti"}
+{"query": "кто выписывает доверенность на представление интересов", "gold": null, "out_of_scope": true, "topic": "doverennosti"}
+{"query": "нужна ли доверенность сотруднику для подписания акта", "gold": null, "out_of_scope": true, "topic": "doverennosti"}
+{"query": "сколько действует доверенность на совершение сделки", "gold": null, "out_of_scope": true, "topic": "doverennosti"}
+{"query": "как отозвать выданную доверенность", "gold": null, "out_of_scope": true, "topic": "doverennosti"}
+{"query": "как оформить командировку за границу", "gold": null, "out_of_scope": true, "topic": "komandirovki_zarubezh"}
+{"query": "какие документы нужны для выезда в другую страну", "gold": null, "out_of_scope": true, "topic": "komandirovki_zarubezh"}
+{"query": "кто оплачивает визу для зарубежной командировки", "gold": null, "out_of_scope": true, "topic": "komandirovki_zarubezh"}
+{"query": "как получить аванс на зарубежную командировку в валюте", "gold": null, "out_of_scope": true, "topic": "komandirovki_zarubezh"}
+{"query": "что делать при утечке данных", "gold": null, "out_of_scope": true, "topic": "ib_incidenty"}
+{"query": "как сообщить об инциденте информационной безопасности", "gold": null, "out_of_scope": true, "topic": "ib_incidenty"}
+{"query": "кто отвечает за расследование инцидента ИБ", "gold": null, "out_of_scope": true, "topic": "ib_incidenty"}
+{"query": "в какой срок нужно уведомить об утечке персональных данных", "gold": null, "out_of_scope": true, "topic": "ib_incidenty"}
+{"query": "как получить пропуск в офис для подрядчика", "gold": null, "out_of_scope": true, "topic": "propuski"}
+{"query": "кто согласует аренду переговорной комнаты", "gold": null, "out_of_scope": true, "topic": "arenda"}
+{"query": "как заказать корпоративную сим-карту", "gold": null, "out_of_scope": true, "topic": "simkarty"}
+{"query": "какой размер компенсации за использование личного автомобиля", "gold": null, "out_of_scope": true, "topic": "avtomobil"}
+{"query": "как перевести сотрудника в другой отдел", "gold": null, "out_of_scope": true, "topic": "perevod"}
+{"query": "как оформить больничный лист", "gold": null, "out_of_scope": true, "topic": "bolnichny"}
+{"query": "кто подписывает справку о доходах", "gold": null, "out_of_scope": true, "topic": "spravki"}

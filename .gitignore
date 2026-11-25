@@ -1,0 +1,32 @@
+# Секреты и артефакты
+.env
+.env.*
+*.key
+*.pem
+kb_db_pass.txt
+kb_pepper.txt
+
+# Модели (29.5 МБ int8 + 116 МБ fp32) — не в git, воспроизводятся скриптом
+models/
+*.onnx
+*.onnx.data
+.hf/
+
+# Кэш и артефакты Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.venv-*/
+
+# Отчёты прогонов: генерируются заново, в git только сводка
+reports/*.json
+!reports/baseline.json
+
+# Корпус генерируется скриптом — не храним бинарники DOCX
+data/corpus/*.docx
+
+# Прочее
+.DS_Store
+Thumbs.db
+*.log
