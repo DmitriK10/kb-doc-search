@@ -437,6 +437,7 @@ class Searcher:
                 # считали. Это 2.6 мс — несопоставимо с экономией 65 мс.
                 qvec_cached = self.encoder.encode_one(query)
                 self._log(ans, qhmac, query, user_id, acl_sig, qvec_cached)
+                ans.latency_ms = int((time.perf_counter() - t0) * 1000)
                 return ans
 
         # --- Подготовка запроса ---
@@ -569,7 +570,13 @@ class Searcher:
             ans.stale_warning = self._build_stale_message(explicit_stale, None)
 
         self._cache_put(qhmac, acl_sig, ans)
-        self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+        # Каноническая латентность: замер ДО записи в журнал плюс сама
+        # запись. _log() возвращает время, потраченное на INSERT, и оно
+        # входит в итог. Так одно число описывает полный цикл.
+        log_ms = self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+        ans.latency_ms = int((time.perf_counter() - t0) * 1000)
+        if log_ms:
+            ans.latency_ms = max(ans.latency_ms, int(log_ms))
         return ans
 
     @staticmethod
@@ -1117,12 +1124,21 @@ class Searcher:
         acl_sig: str,
         qvec=None,
     ) -> None:
+        """Пишет запрос в журнал.
+
+        Возвращает None. ВАЖНО: запись занимает 50-70 мс (отдельный INSERT
+        плюс, при отсутствии qvec, повторный энкодинг). Поэтому вызывающий
+        код ОБЯЗАН пересчитать latency_ms после этого вызова — иначе
+        каноническая латентность (полный цикл с журналом) будет занижена
+        почти вдвое.
+        """
         """Пишет запрос в query_logs.
 
         Сырой текст НЕ пишется. Попадание в кэш тоже логируется (правка B6):
         иначе deflection и time saved посчитаются от неполного числа запросов,
         и дашборд соврёт.
         """
+        t_log = time.perf_counter()
         try:
             if qvec is None:
                 qvec = self.encoder.encode_one(query)
@@ -1148,3 +1164,4 @@ class Searcher:
         except Exception:
             # Логирование не должно ломать ответ пользователю.
             pass
+        return (time.perf_counter() - t_log) * 1000
