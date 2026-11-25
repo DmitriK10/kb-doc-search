@@ -250,9 +250,9 @@ def main() -> int:
                     (created_at, query_hmac, query_len, embedding, response_type,
                      refusal_reason, confidence, top_score, sources, latency_ms,
                      cache_hit, user_id_hash, user_feedback, feedback_at,
-                     is_simulated)
+                     is_simulated, low_confidence)
                 VALUES (%s, %s, %s, %s::halfvec, %s, %s, %s, %s, %s::jsonb,
-                        %s, %s, %s, %s, %s, true)
+                        %s, %s, %s, %s, %s, true, %s)
             """, (
                 r["ts"], qhmac, len(r["query"]), to_pgvector(qvec),
                 ans.response_type, ans.refusal_reason, ans.confidence,
@@ -262,6 +262,7 @@ def main() -> int:
                 ans.cache_hit,
                 hashlib.sha256(r["user"].encode()).hexdigest(),
                 fb, r["ts"] if fb is not None else None,
+                ans.low_confidence,
             ))
             total += 1
             if i % 50 == 0:

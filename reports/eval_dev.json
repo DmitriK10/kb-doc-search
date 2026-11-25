@@ -15,8 +15,8 @@
     "stale_questions": 8,
     "stale_correct": 7,
     "stale_accuracy": 0.875,
-    "p50_ms": 171.6,
-    "p95_ms": 223.6
+    "p50_ms": 167.0,
+    "p95_ms": 234.8
   },
   "details": [
     {
@@ -36,7 +36,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 246.5,
+      "latency_ms": 243.3,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -68,7 +68,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 181.8,
+      "latency_ms": 188.9,
       "top_sources": []
     },
     {
@@ -87,7 +87,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 143.2,
+      "latency_ms": 139.0,
       "top_sources": [
         {
           "doc": "Положение о коммерческой тайне",
@@ -119,7 +119,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 196.7,
+      "latency_ms": 160.8,
       "top_sources": [
         {
           "doc": "Регламент закупок товаров и услуг",
@@ -151,7 +151,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 143.6,
+      "latency_ms": 158.3,
       "top_sources": [
         {
           "doc": "Регламент корпоративного обучения",
@@ -184,7 +184,7 @@
         "blocked_by_coverage": 0.2,
         "coverage_low": 1.0
       },
-      "latency_ms": 139.6,
+      "latency_ms": 168.1,
       "top_sources": [
         {
           "doc": "Регламент расторжения договоров",
@@ -216,7 +216,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 153.4,
+      "latency_ms": 183.9,
       "top_sources": [
         {
           "doc": "Регламент предоставления доступа к информационным системам",
@@ -249,7 +249,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 153.1,
+      "latency_ms": 182.2,
       "top_sources": [
         {
           "doc": "Положение о служебных командировках",
@@ -281,7 +281,7 @@
         "token_coverage": 0.625,
         "coverage_low": 0.0
       },
-      "latency_ms": 160.0,
+      "latency_ms": 185.5,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
@@ -313,7 +313,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 152.5,
+      "latency_ms": 172.3,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -345,7 +345,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 179.9,
+      "latency_ms": 199.9,
       "top_sources": []
     },
     {
@@ -364,7 +364,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 145.3,
+      "latency_ms": 155.1,
       "top_sources": [
         {
           "doc": "Положение о дистанционной работе",
@@ -396,7 +396,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 121.8,
+      "latency_ms": 196.1,
       "top_sources": [
         {
           "doc": "Регламент приёмки товаров и услуг",
@@ -428,7 +428,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 171.7,
+      "latency_ms": 240.7,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -461,7 +461,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 125.6,
+      "latency_ms": 127.3,
       "top_sources": [
         {
           "doc": "Регламент предоставления доступа к информационным системам",
@@ -494,7 +494,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 190.5,
+      "latency_ms": 161.3,
       "top_sources": [
         {
           "doc": "Регламент материальной ответственности сотрудников",
@@ -526,7 +526,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 158.6,
+      "latency_ms": 138.5,
       "top_sources": [
         {
           "doc": "Регламент проведения медицинских осмотров",
@@ -558,7 +558,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 219.6,
+      "latency_ms": 179.9,
       "top_sources": []
     },
     {
@@ -577,7 +577,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 221.0,
+      "latency_ms": 210.2,
       "top_sources": []
     },
     {
@@ -596,7 +596,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 168.7,
+      "latency_ms": 196.6,
       "top_sources": []
     },
     {
@@ -616,7 +616,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 150.1,
+      "latency_ms": 195.4,
       "top_sources": [
         {
           "doc": "Регламент оформления авансовых отчётов",
@@ -648,7 +648,7 @@
         "token_coverage": 0.6,
         "coverage_low": 0.0
       },
-      "latency_ms": 204.7,
+      "latency_ms": 168.8,
       "top_sources": [
         {
           "doc": "Регламент проведения медицинских осмотров",
@@ -681,7 +681,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 152.8,
+      "latency_ms": 141.0,
       "top_sources": [
         {
           "doc": "Регламент изменения штатного расписания",
@@ -713,7 +713,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 173.6,
+      "latency_ms": 174.3,
       "top_sources": []
     },
     {
@@ -732,7 +732,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 188.3,
+      "latency_ms": 208.8,
       "top_sources": []
     },
     {
@@ -751,7 +751,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 194.2,
+      "latency_ms": 151.1,
       "top_sources": [
         {
           "doc": "Регламент архивного хранения документов",
@@ -784,7 +784,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 223.6,
+      "latency_ms": 254.3,
       "top_sources": [
         {
           "doc": "Регламент работы с соглашениями о конфиденциальности",
@@ -817,7 +817,7 @@
         "blocked_by_coverage": 0.2857142857142857,
         "coverage_low": 1.0
       },
-      "latency_ms": 164.0,
+      "latency_ms": 172.5,
       "top_sources": [
         {
           "doc": "Положение о дистанционной работе",
@@ -849,7 +849,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 177.1,
+      "latency_ms": 160.9,
       "top_sources": []
     },
     {
@@ -868,7 +868,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 289.9,
+      "latency_ms": 167.7,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -901,7 +901,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 169.3,
+      "latency_ms": 153.0,
       "top_sources": [
         {
           "doc": "Регламент проведения инструктажей по охране труда",
@@ -934,7 +934,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 192.7,
+      "latency_ms": 139.6,
       "top_sources": [
         {
           "doc": "Регламент приёмки товаров и услуг",
@@ -967,7 +967,7 @@
         "blocked_by_coverage": 0.2,
         "coverage_low": 1.0
       },
-      "latency_ms": 218.0,
+      "latency_ms": 162.7,
       "top_sources": [
         {
           "doc": "Регламент изменения штатного расписания",
@@ -999,7 +999,7 @@
         "token_coverage": 1.0,
         "coverage_low": 0.0
       },
-      "latency_ms": 143.1,
+      "latency_ms": 136.8,
       "top_sources": [
         {
           "doc": "Регламент использования корпоративной связи",
@@ -1032,7 +1032,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 134.8,
+      "latency_ms": 134.2,
       "top_sources": [
         {
           "doc": "Инструкция по пожарной безопасности",
@@ -1064,7 +1064,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 162.1,
+      "latency_ms": 177.3,
       "top_sources": [
         {
           "doc": "Регламент изменения штатного расписания",
@@ -1096,7 +1096,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 154.3,
+      "latency_ms": 136.0,
       "top_sources": [
         {
           "doc": "Регламент делопроизводства",
@@ -1129,7 +1129,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 163.5,
+      "latency_ms": 124.9,
       "top_sources": [
         {
           "doc": "Регламент делопроизводства",
@@ -1161,7 +1161,7 @@
         "token_coverage": 0.625,
         "coverage_low": 0.0
       },
-      "latency_ms": 197.8,
+      "latency_ms": 170.8,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
@@ -1193,7 +1193,7 @@
         "token_coverage": 0.6,
         "coverage_low": 0.0
       },
-      "latency_ms": 180.5,
+      "latency_ms": 153.3,
       "top_sources": [
         {
           "doc": "Регламент проведения медицинских осмотров",
@@ -1226,7 +1226,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 157.3,
+      "latency_ms": 142.8,
       "top_sources": [
         {
           "doc": "Регламент претензионной работы",
@@ -1258,7 +1258,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 158.6,
+      "latency_ms": 160.8,
       "top_sources": [
         {
           "doc": "Инструкция по пожарной безопасности",
@@ -1291,7 +1291,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 198.6,
+      "latency_ms": 145.8,
       "top_sources": [
         {
           "doc": "Регламент управления изменениями в ИТ-системах",
@@ -1323,7 +1323,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 212.3,
+      "latency_ms": 221.7,
       "top_sources": []
     },
     {
@@ -1342,7 +1342,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 200.8,
+      "latency_ms": 188.6,
       "top_sources": [
         {
           "doc": "Регламент расторжения договоров",
@@ -1375,7 +1375,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 195.1,
+      "latency_ms": 164.8,
       "top_sources": [
         {
           "doc": "Регламент обработки заявок в ИТ-поддержку",
@@ -1407,7 +1407,7 @@
         "token_coverage": 1.0,
         "coverage_low": 0.0
       },
-      "latency_ms": 192.0,
+      "latency_ms": 177.3,
       "top_sources": [
         {
           "doc": "Регламент проведения инструктажей по охране труда",
@@ -1439,7 +1439,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 165.9,
+      "latency_ms": 158.2,
       "top_sources": [
         {
           "doc": "Регламент учёта рабочего времени",
@@ -1471,7 +1471,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 161.7,
+      "latency_ms": 181.9,
       "top_sources": [
         {
           "doc": "Регламент использования электронной подписи",
@@ -1503,7 +1503,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 173.0,
+      "latency_ms": 148.1,
       "top_sources": [
         {
           "doc": "Положение о коммерческой тайне",
@@ -1536,7 +1536,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 170.6,
+      "latency_ms": 153.7,
       "top_sources": [
         {
           "doc": "Инструкция по работе с CRM-системой",
@@ -1568,7 +1568,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 196.4,
+      "latency_ms": 187.8,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -1600,7 +1600,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 222.7,
+      "latency_ms": 180.3,
       "top_sources": []
     },
     {
@@ -1620,7 +1620,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 166.6,
+      "latency_ms": 188.8,
       "top_sources": [
         {
           "doc": "Регламент использования электронной подписи",
@@ -1652,7 +1652,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 277.2,
+      "latency_ms": 166.3,
       "top_sources": []
     },
     {
@@ -1671,7 +1671,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 211.4,
+      "latency_ms": 234.8,
       "top_sources": [
         {
           "doc": "Регламент проведения медицинских осмотров",
@@ -1704,7 +1704,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 171.3,
+      "latency_ms": 158.0,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -1737,7 +1737,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 213.8,
+      "latency_ms": 148.3,
       "top_sources": [
         {
           "doc": "Регламент делопроизводства",
@@ -1769,7 +1769,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 147.7,
+      "latency_ms": 150.0,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
@@ -1802,7 +1802,7 @@
         "blocked_by_coverage": 0.2,
         "coverage_low": 1.0
       },
-      "latency_ms": 187.2,
+      "latency_ms": 164.5,
       "top_sources": [
         {
           "doc": "Регламент использования корпоративной связи",
@@ -1834,7 +1834,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 148.3,
+      "latency_ms": 173.0,
       "top_sources": [
         {
           "doc": "Инструкция по использованию печатей и штампов",
@@ -1866,7 +1866,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 153.8,
+      "latency_ms": 146.8,
       "top_sources": [
         {
           "doc": "Регламент управления изменениями в ИТ-системах",
@@ -1898,7 +1898,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 180.2,
+      "latency_ms": 211.0,
       "top_sources": []
     },
     {
@@ -1917,7 +1917,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 163.6,
+      "latency_ms": 149.9,
       "top_sources": [
         {
           "doc": "Регламент закупок товаров и услуг",
@@ -1950,7 +1950,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 145.3,
+      "latency_ms": 139.9,
       "top_sources": [
         {
           "doc": "Регламент оформления авансовых отчётов",
@@ -1982,7 +1982,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 409.2,
+      "latency_ms": 156.7,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
@@ -2015,7 +2015,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 135.0,
+      "latency_ms": 160.0,
       "top_sources": [
         {
           "doc": "Политика информационной безопасности",
@@ -2047,7 +2047,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 190.9,
+      "latency_ms": 190.8,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -2079,7 +2079,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 144.4,
+      "latency_ms": 191.3,
       "top_sources": []
     },
     {
@@ -2098,7 +2098,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 145.3,
+      "latency_ms": 153.3,
       "top_sources": [
         {
           "doc": "Регламент учёта рабочего времени",
@@ -2130,7 +2130,7 @@
         "token_coverage": 0.42857142857142855,
         "coverage_low": 0.0
       },
-      "latency_ms": 173.7,
+      "latency_ms": 167.3,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
@@ -2162,7 +2162,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 179.6,
+      "latency_ms": 172.4,
       "top_sources": []
     },
     {
@@ -2182,7 +2182,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 127.4,
+      "latency_ms": 170.4,
       "top_sources": [
         {
           "doc": "Регламент приёмки товаров и услуг",
@@ -2215,7 +2215,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 169.8,
+      "latency_ms": 187.2,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -2247,7 +2247,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 148.7,
+      "latency_ms": 167.0,
       "top_sources": []
     },
     {
@@ -2266,7 +2266,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 175.5,
+      "latency_ms": 167.1,
       "top_sources": []
     },
     {
@@ -2285,7 +2285,7 @@
         "token_coverage": 0.75,
         "coverage_low": 0.0
       },
-      "latency_ms": 184.4,
+      "latency_ms": 160.4,
       "top_sources": [
         {
           "doc": "Регламент проведения инструктажей по охране труда",
@@ -2318,7 +2318,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 168.3,
+      "latency_ms": 153.1,
       "top_sources": [
         {
           "doc": "Положение о дистанционной работе",
@@ -2351,7 +2351,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 165.9,
+      "latency_ms": 153.3,
       "top_sources": [
         {
           "doc": "Регламент использования корпоративной связи",
@@ -2383,7 +2383,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 165.0,
+      "latency_ms": 192.2,
       "top_sources": []
     },
     {
@@ -2402,7 +2402,7 @@
         "token_coverage": 1.0,
         "coverage_low": 0.0
       },
-      "latency_ms": 175.2,
+      "latency_ms": 228.1,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -2435,7 +2435,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 178.8,
+      "latency_ms": 152.7,
       "top_sources": [
         {
           "doc": "Регламент работы с соглашениями о конфиденциальности",
@@ -2468,7 +2468,7 @@
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 200.6,
+      "latency_ms": 169.5,
       "top_sources": [
         {
           "doc": "Положение о служебных командировках",
@@ -2500,7 +2500,7 @@
         "token_coverage": 0.7142857142857143,
         "coverage_low": 0.0
       },
-      "latency_ms": 209.5,
+      "latency_ms": 206.3,
       "top_sources": [
         {
           "doc": "Регламент использования корпоративной связи",
@@ -2532,7 +2532,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 167.7,
+      "latency_ms": 158.4,
       "top_sources": [
         {
           "doc": "Положение о служебных командировках",
@@ -2564,7 +2564,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 210.9,
+      "latency_ms": 266.1,
       "top_sources": []
     },
     {
@@ -2583,7 +2583,7 @@
         "token_coverage": 0.6,
         "coverage_low": 0.0
       },
-      "latency_ms": 213.3,
+      "latency_ms": 157.8,
       "top_sources": [
         {
           "doc": "Регламент архивного хранения документов",
@@ -2615,7 +2615,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 171.6,
+      "latency_ms": 158.0,
       "top_sources": []
     },
     {
@@ -2634,7 +2634,7 @@
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 192.6,
+      "latency_ms": 174.6,
       "top_sources": []
     },
     {
@@ -2653,7 +2653,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 204.7,
+      "latency_ms": 204.1,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -2685,7 +2685,7 @@
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 169.9,
+      "latency_ms": 138.0,
       "top_sources": [
         {
           "doc": "Регламент материальной ответственности сотрудников",
@@ -2717,7 +2717,7 @@
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 157.2,
+      "latency_ms": 156.7,
       "top_sources": [
         {
           "doc": "Регламент оформления авансовых отчётов",
@@ -2750,7 +2750,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 149.3,
+      "latency_ms": 153.3,
       "top_sources": [
         {
           "doc": "Регламент управления изменениями в ИТ-системах",
@@ -2783,7 +2783,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 152.6,
+      "latency_ms": 144.6,
       "top_sources": [
         {
           "doc": "Регламент учёта рабочего времени",

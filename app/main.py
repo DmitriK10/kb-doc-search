@@ -114,7 +114,9 @@ async def ask(req: AskRequest) -> JSONResponse:
     # HMAC нужен интерфейсу, чтобы привязать оценку к запросу.
     # Сам текст запроса в журнал не пишется.
     from app.search.search import query_hmac
-    payload["query_hmac"] = query_hmac(req.query, s.pepper)
+    payload["query_hmac"] = query_hmac(
+        req.query, s.pepper, getattr(s, "corpus_generation", "")
+    )
     return JSONResponse(payload)
 
 
@@ -209,6 +211,8 @@ async def metrics(days: int = 30) -> dict:
                        count(*) FILTER (WHERE user_feedback = 1),
                        count(*) FILTER (WHERE user_feedback = -1),
                        count(*) FILTER (WHERE cache_hit),
+                       count(*) FILTER (WHERE response_type = 'success'
+                                          AND low_confidence),
                        coalesce(percentile_cont(0.5) WITHIN GROUP (
                            ORDER BY latency_ms), 0),
                        coalesce(sum(CASE WHEN response_type <> 'refusal'
@@ -225,15 +229,20 @@ async def metrics(days: int = 30) -> dict:
                         "эмбеддинги и решения реальные",
                 "total": dt,
                 "success": d[1], "stale": d[2], "refusal": d[3],
+                # Две формулы deflection: строгая (без тира) и полная.
+                # Строгая — для Time Saved: цитата с плашкой на вопрос вне
+                # базы не экономит время, сотрудник идёт к владельцу.
                 "deflection_rate": round((d[1] + d[2]) / dt, 4) if dt else 0,
+                "strict_deflection_rate": round((d[1] + d[2] - d[7]) / dt, 4) if dt else 0,
+                "tier_share": round(d[7] / dt, 4) if dt else 0,
                 "refusal_rate": round(d[3] / dt, 4) if dt else 0,
                 "stale_rate": round(d[2] / dt, 4) if dt else 0,
                 "useful": d[4], "useless": d[5],
                 "cache_hits": d[6],
                 "useful_rate": (round(d[4] / (d[4] + d[5]), 4)
                                 if (d[4] + d[5]) else 0),
-                "p50_ms": round(float(d[7]), 1),
-                "hours_saved": round(float(d[8]) / 60.0, 1),
+                "p50_ms": round(float(d[8]), 1),
+                "hours_saved": round(float(d[9]) / 60.0, 1),
             }
             cur.close()
         return out
@@ -551,8 +560,9 @@ function render(d) {
   let h = '<div class="card">' + badge;
 
   if (isTier) {
-    h += '<div class="meta">Совпадение по ключевым словам слабое: ' +
-         'фрагмент может быть не о том. Проверьте, что он отвечает на вопрос.</div>';
+    h += '<div class="meta">Совпадение по словам вопроса слабое. ' +
+         'Фрагмент близок по смыслу, но может быть не о том. ' +
+         'Если он не отвечает — считайте, что ответа в базе нет.</div>';
   }
 
   if (d.stale_warning) {

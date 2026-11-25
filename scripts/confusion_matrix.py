@@ -179,10 +179,18 @@ def main() -> int:
     print("=" * 74)
     print(f"Recall@3                = (A+C)/(A+B+C+D+E+F) = ({A}+{C})/{n_in} = {recall_at_3:.4f}")
     print(f"  только уверенные      = A/(...)             = {A}/{n_in} = {confident_recall:.4f}")
+    # Две дефиниции precision — обе публикуются с явными названиями.
+    confident_precision = A / (A + B) if (A + B) else 0.0
     print(f"Refusal precision       = I/(G+I)             = {I}/{G+I} = {refusal_precision:.4f}")
+    print(f"  (стандартная: доля верных отказов среди решений на OOS)")
+    print(f"Отказов при найденном gold = E                 = {E}")
+    print(f"  (гейт не отрезал ни одного найденного ответа)")
+    print(f"Confident precision     = A/(A+B)             = {A}/{A+B} = {confident_precision:.4f}")
+    print(f"  (уверенная цитата на верный документ)")
     print(f"Tier on out-of-scope    = H/(G+H+I)           = {H}/{n_oos} = {tier_on_oos:.4f}")
     print(f"Ложных уверенных ответов= G                   = {false_answers}")
-    print(f"Ложных отказов          = E+F                 = {false_refusals} из {n_in}")
+    print(f"In-scope без ответа     = E+F                 = {false_refusals} из {n_in}")
+    print(f"  (все {E+F} — retrieval miss, не ложный отказ; уже в Recall@3)")
     if stale_accuracy is not None:
         print(f"Stale accuracy          = {stale_ok}/{stale_total} = {stale_accuracy:.4f}")
 
@@ -219,6 +227,9 @@ def main() -> int:
             "recall_at_3": round(recall_at_3, 4),
             "confident_recall": round(confident_recall, 4),
             "refusal_precision": round(refusal_precision, 4),
+            "refusals_at_found_gold": E,
+            "confident_precision": round(confident_precision, 4),
+            "in_scope_without_answer": false_refusals,
             "tier_on_out_of_scope": round(tier_on_oos, 4),
             "false_answers": false_answers,
             "false_refusals": false_refusals,

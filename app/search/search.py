@@ -117,6 +117,12 @@ class Answer:
     # гейта. Пользователь видит цитату с пометкой «проверьте источник».
     # Это success, а не новый response_type (требование директивы).
     low_confidence: bool = False
+    # Для тира: система НЕ МОЖЕТ отличить «ответ найден, но слабо»
+    # от «ответа нет, это ближайшее». Проверено на данных: внутри тира
+    # coverage in-scope 0.20-0.33 и OOS 0.20-0.33 идентичны, косинусы
+    # пересекаются (0.545 против 0.510). Поэтому текст плашки единый
+    # и не утверждает ни того, ни другого.
+    answer_scope: str = "uncertain"
 
     def to_dict(self) -> dict:
         return {
@@ -131,18 +137,25 @@ class Answer:
             "features": {k: round(v, 4) for k, v in self.features.items()},
             "stale_warning": self.stale_warning,
             "low_confidence": self.low_confidence,
+            "answer_scope": self.answer_scope,
         }
 
 
-def query_hmac(query: str, pepper: str) -> str:
-    """HMAC-SHA256 от нормализованного запроса.
+def query_hmac(query: str, pepper: str, corpus_generation: str = "") -> str:
+    """HMAC-SHA256 от нормализованного запроса и поколения корпуса.
 
     Не sha256: короткий запрос («кто подписывает») перебирается по словарю
     за минуты, и по хэшу можно восстановить текст. HMAC с серверным pepper
     этого не позволяет, а для кэша и дедупликации хэш работает так же.
+
+    corpus_generation — отпечаток состояния корпуса (max(indexed_at)
+    активных чанков). ВАЖНО: без него кэш отдавал ответ по СНЯТОЙ версии
+    регламента до конца TTL — ровно та боль, которую проект решает.
+    При переиндексации отпечаток меняется, и старые записи недостижимы.
     """
     norm = " ".join(query.lower().split())
-    return hmac.new(pepper.encode(), norm.encode(), hashlib.sha256).hexdigest()
+    payload = norm if not corpus_generation else f"{norm}|{corpus_generation}"
+    return hmac.new(pepper.encode(), payload.encode(), hashlib.sha256).hexdigest()
 
 
 class Searcher:
@@ -160,6 +173,10 @@ class Searcher:
         self.threshold: float = float(config.get("threshold", 0.5))
         self.stale_threshold: float = float(config.get("stale_threshold", 0.62))
         self.creative_min_sim: float = float(config.get("creative_min_sim", 0.86))
+        # Отпечаток корпуса для ключа кэша. Считается один раз при старте:
+        # переиндексация требует перезапуска API, и это правильно —
+        # иначе кэш продолжил бы отдавать ответы по снятой версии.
+        self.corpus_generation = self._corpus_generation()
 
     # ---------------------------------------------------------------- SQL --
 
@@ -423,7 +440,7 @@ class Searcher:
         t0 = time.perf_counter()
         acl = acl or ["all"]
         acl_sig = acl_signature(acl)
-        qhmac = query_hmac(query, self.pepper)
+        qhmac = query_hmac(query, self.pepper, self.corpus_generation)
 
         # --- Кэш: ключ включает ACL, иначе утечка между группами (3.1) ---
         if use_cache:
@@ -830,6 +847,28 @@ class Searcher:
 
     # ------------------------------------------------------- вспомогательное --
 
+    def _corpus_generation(self) -> str:
+        """Отпечаток состояния корпуса: max(indexed_at) активных чанков.
+
+        Нужен для ключа кэша. Если регламент обновили и переиндексировали,
+        отпечаток меняется, и старые записи кэша становятся недостижимыми —
+        иначе до конца TTL отдавался бы ответ по снятой версии.
+        """
+        try:
+            conn = self._psycopg.connect(self.dsn, autocommit=False)
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT coalesce(extract(epoch FROM max(d.indexed_at))::bigint, 0)
+                FROM chunks c JOIN documents d ON d.id = c.document_id
+                WHERE c.is_active
+            """)
+            row = cur.fetchone()
+            cur.close()
+            conn.close()
+            return str(row[0]) if row else "0"
+        except Exception:
+            return "0"
+
     def _check_version_active(self, version: str) -> dict | None:
         """Есть ли версия в базе и активна ли она."""
         conn = self._psycopg.connect(self.dsn, autocommit=False)
@@ -1148,9 +1187,10 @@ class Searcher:
                 INSERT INTO query_logs
                     (query_hmac, query_len, embedding, response_type,
                      refusal_reason, confidence, top_score, sources,
-                     latency_ms, cache_hit, user_id_hash, is_simulated)
+                     latency_ms, cache_hit, user_id_hash, is_simulated,
+                     low_confidence)
                 VALUES (%s, %s, %s::halfvec, %s, %s, %s, %s, %s::jsonb,
-                        %s, %s, %s, false)
+                        %s, %s, %s, false, %s)
             """, (
                 qhmac, len(query), to_pgvector(qvec), ans.response_type,
                 ans.refusal_reason, ans.confidence,
@@ -1158,6 +1198,7 @@ class Searcher:
                 json.dumps([s.to_dict() for s in ans.sources], ensure_ascii=False),
                 ans.latency_ms, ans.cache_hit,
                 hashlib.sha256(f"{user_id}".encode()).hexdigest(),
+                ans.low_confidence,
             ))
             conn.commit()
             cur.close()
