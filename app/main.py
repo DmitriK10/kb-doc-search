@@ -427,11 +427,23 @@ async function ask() {
 function render(d) {
   const isOk = d.response_type === 'success';
   const isStale = d.response_type === 'stale';
-  let badge = isOk ? '<span class="badge b-ok">НАЙДЕНО В ДОКУМЕНТЕ</span>'
+  const isTier = isOk && d.low_confidence;
+
+  // Тир: ответ найден, но совпадение терминов слабое. Показываем цитату,
+  // но с явной пометкой — пользователь решает сам. Это не отказ:
+  // отказ заставил бы его искать вручную, хотя ответ, возможно, рядом.
+  let badge = isTier
+            ? '<span class="badge b-warn">НАЙДЕНО, ПРОВЕРЬТЕ ИСТОЧНИК</span>'
+            : isOk ? '<span class="badge b-ok">НАЙДЕНО В ДОКУМЕНТЕ</span>'
             : isStale ? '<span class="badge b-warn">ВЕРСИЯ УСТАРЕЛА</span>'
             : '<span class="badge b-bad">ЧЕСТНЫЙ ОТКАЗ</span>';
 
   let h = '<div class="card">' + badge;
+
+  if (isTier) {
+    h += '<div class="meta">Совпадение по ключевым словам слабое: ' +
+         'фрагмент может быть не о том. Проверьте, что он отвечает на вопрос.</div>';
+  }
 
   if (d.stale_warning) {
     h += '<div class="meta">' + esc(d.stale_warning) + '</div>';
@@ -468,9 +480,14 @@ function render(d) {
     }
   }
 
+  // При отказе «уверенность 57%» читается как уверенность в ответе,
+  // поэтому формулировка разная для разных исходов.
+  const confLabel = isOk
+    ? 'уверенность ' + (d.confidence * 100).toFixed(0) + '%'
+    : 'уверенность в отсутствии ответа ' + (d.confidence * 100).toFixed(0) + '%';
   h += '<div class="src" style="margin-top:12px">' +
-       'уверенность ' + (d.confidence * 100).toFixed(0) + '% · ' +
-       d.latency_ms + ' мс' + (d.cache_hit ? ' · из кэша' : '') + '</div>';
+       confLabel + ' · ' + d.latency_ms + ' мс' +
+       (d.cache_hit ? ' · из кэша' : '') + '</div>';
   h += '</div>';
   return h;
 }

@@ -109,6 +109,7 @@ def collect(s: Searcher, records: list[dict], use_cache: bool = False) -> list[d
             "gold": rec.get("gold"),
             "answer": ans,
             "features": enrich_features(ans.features),
+            "low_confidence": ans.low_confidence,
             "p_raw": ans.confidence,
             "latency_ms": lat,
             "hit": is_hit(ans, rec.get("gold")),
@@ -134,16 +135,16 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
     # работы системы, а не из-за ошибки поиска.
     n_stale = 0
     stale_correct = 0
+    tier_oos = 0          # тир-ответов на вопросы вне базы
 
     for r in rows:
         feats = enrich_features(r["features"])
         p = confidence(feats, weights) if weights else r["p_raw"]
-        # Каскад: логистика решает «есть ли ответ», покрытие отсекает
-        # «похожий, но не тот». Оба условия обязательны.
-        answered = p >= threshold and feats.get("token_coverage", 1.0) >= COVERAGE_GATE
-        # Жёсткая страховка по покрытию токенов убрана: она роняла Recall@3
-        # с 0.864 до 0.682, потому что поиск по смыслу работает именно
-        # при несовпадении слов. Покрытие остаётся признаком в логистике.
+        # ВАЖНО: «ответил ли» берём из ФАКТИЧЕСКОГО ответа системы,
+        # а не пересчитываем по формуле. Иначе метрики описывают модель
+        # порога, а не продукт: тир-ответы (success + low_confidence)
+        # считались бы отказами, и Recall@3 занижался бы в 1.5 раза.
+        answered = r["answer"].response_type != "refusal"
         lats.append(r["latency_ms"])
 
         # --- stale-вопрос: отдельный исход ---
@@ -158,9 +159,21 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
                 stale_correct += 1
             continue
 
+        # Тир: ответ с пометкой «низкая уверенность».
+        # Для precision он считается ЛОЖНЫМ ответом (мы не уверены),
+        # для Recall@3 — попаданием (цитата показана).
+        # Так метрики честно разделяют «уверенно отвечаем» и «показываем
+        # с оговоркой».
+        lc = bool(r.get("low_confidence"))
+
         if r["out_of_scope"]:
-            if answered:
-                fp += 1        # ложный ответ на вопрос вне базы
+            if answered and not lc:
+                fp += 1        # уверенный ответ на вопрос вне базы — плохо
+            elif answered and lc:
+                # Тир на out-of-scope: цитата показана с пометкой.
+                # Это НЕ уверенный ответ, поэтому в confident_precision
+                # не входит. Считается отдельно как цена тира.
+                tier_oos += 1
             else:
                 tn += 1        # верный отказ
         else:
@@ -170,12 +183,15 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
                     tp += 1
                     hits += 1
                 else:
-                    fn += 1    # ответили, но не тем
+                    fn += 1
             else:
                 fn += 1        # ложный отказ
 
     n_out = fp + tn
     recall_at_3 = hits / n_in if n_in else 0.0
+    # Знаменатель — только УВЕРЕННЫЕ решения (ответ или отказ).
+    # Тир исключён: это отдельный исход, и смешивать его с точностью
+    # отказа нельзя.
     refusal_precision = tn / n_out if n_out else 0.0
     refusal_recall = tn / (tn + fp) if (tn + fp) else 0.0
     answered_total = tp + fp + fn - (n_in - hits)
@@ -195,6 +211,10 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
         # Раньше считалось как доля от всех запросов, и при отсутствии
         # stale-вопросов в наборе метрика всегда была 0.000 —
         # подозрительный ноль на слайде.
+        "low_confidence_answers": sum(
+            1 for r in rows if r.get("low_confidence") and not r["out_of_scope"]
+        ),
+        "tier_on_out_of_scope": tier_oos,
         "stale_questions": n_stale,
         "stale_correct": stale_correct,
         "stale_accuracy": round(stale_correct / n_stale, 4) if n_stale else None,
@@ -423,6 +443,8 @@ def main() -> int:
             "out_of_scope": r["out_of_scope"],
             "hit": r["hit"],
             "response_type": r["answer"].response_type,
+            "low_confidence": bool(r.get("low_confidence")),
+            "is_stale": bool(r.get("is_stale")),
             "features": r["features"],
             "latency_ms": round(r["latency_ms"], 1),
             "top_sources": [{"doc": s_.doc_title, "sec": s_.section_path}

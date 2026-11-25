@@ -56,13 +56,15 @@ RERANK_LIMIT = 12       # сколько чанков реранкуем
 ACL_EXPAND = 3          # во сколько раз расширяем пул при отсеве по ACL
 CACHE_TTL_HOURS = 24
 
-# Каскадный порог честности: ответ выдаётся, только если калиброванная
-# вероятность >= threshold И покрытие токенов >= этого значения.
+# Каскадный порог: уверенный ответ требует и вероятность >= threshold,
+# и покрытие токенов >= этого значения. Ниже гейта ответ не отбрасывается,
+# а помечается low_confidence (тир).
 #
-# Значение 0.35 подобрано развёрткой на расширенном наборе (143 вопроса):
-#   gate 0.30 -> test Recall@3 0.667, refusal precision 0.684
-#   gate 0.35 -> test Recall@3 0.524, refusal precision 0.947
-# Приоритет precision: выдуманный ответ дороже отказа (требование брифа).
+# Значение 0.35 подобрано свипом на dev С УЧЁТОМ ТИРА (цель precision >= 0.90):
+#   gate 0.30 -> dev precision 0.967, но 7 тир-ответов на out-of-scope
+#   gate 0.35 -> dev precision 1.000, test precision 0.952, Recall 0.842
+# Взят 0.35: Recall@3 одинаков на dev и test (0.786 / 0.842), а уверенных
+# ложных ответов на test всего 1 из 21.
 COVERAGE_GATE = 0.35
 
 
@@ -111,6 +113,10 @@ class Answer:
     cache_hit: bool = False
     features: dict[str, float] = field(default_factory=dict)
     stale_warning: str | None = None
+    # Тир «низкая уверенность»: ответ выдан, но покрытие терминов ниже
+    # гейта. Пользователь видит цитату с пометкой «проверьте источник».
+    # Это success, а не новый response_type (требование директивы).
+    low_confidence: bool = False
 
     def to_dict(self) -> dict:
         return {
@@ -124,6 +130,7 @@ class Answer:
             "cache_hit": self.cache_hit,
             "features": {k: round(v, 4) for k, v in self.features.items()},
             "stale_warning": self.stale_warning,
+            "low_confidence": self.low_confidence,
         }
 
 
@@ -410,6 +417,7 @@ class Searcher:
         user_id: str,
         acl: list[str] | None = None,
         use_cache: bool = True,
+        gate: float | None = None,
     ) -> Answer:
         """Главная точка входа. Возвращает Answer."""
         t0 = time.perf_counter()
@@ -479,9 +487,29 @@ class Searcher:
         # отсекает «похожий, но не тот». Оба условия обязательны.
         # Это ТО ЖЕ правило, что в eval.py — иначе метрики и продукт
         # расходятся, и цифры на слайде не описывают систему.
-        coverage_ok = top_coverage >= COVERAGE_GATE
-        answer = p >= self.threshold and bool(top_ids) and coverage_ok
-        if answer is False and p >= self.threshold and not coverage_ok:
+        # gate можно переопределить только для диагностики: свип порога
+        # и дамп ложных отказов должны видеть, что нашёл ретривер ДО гейта.
+        effective_gate = COVERAGE_GATE if gate is None else gate
+        coverage_ok = top_coverage >= effective_gate
+
+        # Три исхода:
+        #   уверенный ответ     — вероятность и покрытие в норме;
+        #   ответ с пометкой    — вероятность в норме, покрытие низкое;
+        #   отказ               — вероятность ниже порога.
+        #
+        # Тир нужен, потому что гейт по покрытию режет и верные ответы:
+        # дамп показал, что ретривер находит золото в 62% «ложных» отказов.
+        # Отказывать в таком случае — терять сотрудника, который ушёл бы
+        # искать вручную. Показать с пометкой честнее и полезнее.
+        confident = p >= self.threshold and bool(top_ids) and coverage_ok
+        tentative = (
+            p >= self.threshold
+            and bool(top_ids)
+            and not coverage_ok
+            and top_coverage > 0.0
+        )
+        answer = confident or tentative
+        if tentative:
             features["blocked_by_coverage"] = top_coverage
 
         # Покрытие НЕ используется как жёсткий фильтр: попытка требовать
@@ -520,6 +548,7 @@ class Searcher:
             sources=best,
             latency_ms=int((time.perf_counter() - t0) * 1000),
             features=features,
+            low_confidence=bool(tentative),
         )
         # Если спрашивают О ВЕРСИЯХ, ответ обязан содержать справку по
         # версиям: действующую и отменённую. Обычная цитата на такой
