@@ -322,6 +322,12 @@ INDEX_HTML = """<!DOCTYPE html>
 </div>
 
 <script>
+// Базовый путь: страница может отдаваться и в корне, и под префиксом /kb/.
+// Абсолютные /api/... работают только в корне; под префиксом они уходят
+// в чужой server-блок nginx и дают 404. Поэтому путь вычисляется из URL.
+const BASE = location.pathname.replace(/\/[^\/]*$/, '/');
+const api = (p) => BASE + p.replace(/^\//, '');
+
 const EXAMPLES = [
   "кто подписывает агентский договор свыше миллиона",
   "какой срок согласования договора",
@@ -359,7 +365,7 @@ async function ask() {
   out.innerHTML = '<div class="card"><span class="spin"></span> Ищу…</div>';
 
   try {
-    const r = await fetch('/api/ask', {
+    const r = await fetch(api('api/ask'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({query: q})
@@ -435,7 +441,7 @@ function bindFeedback() {
       const hmac = box.dataset.hmac;
       const useful = b.dataset.v === '1';
       try {
-        await fetch('/api/feedback', {
+        await fetch(api('api/feedback'), {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({query_hmac: hmac, useful})
@@ -449,8 +455,8 @@ function bindFeedback() {
 async function loadStats() {
   try {
     const [m, s] = await Promise.all([
-      fetch('/api/metrics?days=30').then(r => r.json()),
-      fetch('/api/stats').then(r => r.json())
+      fetch(api('api/metrics?days=30')).then(r => r.json()),
+      fetch(api('api/stats')).then(r => r.json())
     ]);
     const items = [
       [m.total, 'запросов'],
