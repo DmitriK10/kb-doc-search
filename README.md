@@ -193,11 +193,25 @@ python scripts/smoke_db.py  --dsn "$DSN" --mode fts    # 28 проверок
 python scripts/test_schema.py --dsn "$DSN"             # 20 проверок
 python tests/test_fusion.py                            # 21 проверка
 
-python scripts/gen_validation.py                       # сплит dev/test
+python scripts/gen_validation_v2.py                    # 143 вопроса, сплит dev/test
 python scripts/enrich_gold.py --dsn "$DSN"             # chunk_id в разметку
 python scripts/eval.py --dsn "$DSN" --split dev --calibrate
 python scripts/eval.py --dsn "$DSN" --split test       # цифры для слайда
 ```
+
+Отчёты пишутся в `reports/*.json` и лежат в репозитории. Каждая цифра
+«проверено N/N» имеет свой JSON и команду воспроизведения:
+
+| Файл | Команда |
+|---|---|
+| `reports/smoke_db_*.json` | `python scripts/smoke_db.py --dsn "$DSN" --mode fts` |
+| `reports/schema_*.json` | `python scripts/test_schema.py --dsn "$DSN"` |
+| `reports/eval_dev.json` | `python scripts/eval.py --dsn "$DSN" --split dev --calibrate` |
+| `reports/eval_test.json` | `python scripts/eval.py --dsn "$DSN" --split test` |
+| `reports/index_report.json` | `python scripts/index_corpus.py --corpus data/corpus --dsn "$DSN"` |
+
+`tests/test_fusion.py` печатает результат в stdout (21 проверка) — он
+запускается без БД и потому не пишет JSON.
 
 ---
 
