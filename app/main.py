@@ -196,6 +196,42 @@ async def metrics(days: int = 30) -> dict:
                 GROUP BY refusal_reason ORDER BY count(*) DESC
             """, (days,))
             out["refusal_reasons"] = {k or "unknown": v for k, v in cur.fetchall()}
+
+            # Демонстрационная история — ОТДЕЛЬНОЙ группой, с явной пометкой.
+            # Смешивать с реальными нельзя: тогда цифра на дашборде станет
+            # фикцией. Но и скрывать нельзя: на стенде реальных запросов
+            # пока нет, и без этой панели метрики выглядели бы нулевыми.
+            cur.execute("""
+                SELECT count(*),
+                       count(*) FILTER (WHERE response_type = 'success'),
+                       count(*) FILTER (WHERE response_type = 'stale'),
+                       count(*) FILTER (WHERE response_type = 'refusal'),
+                       count(*) FILTER (WHERE user_feedback = 1),
+                       count(*) FILTER (WHERE user_feedback = -1),
+                       coalesce(percentile_cont(0.5) WITHIN GROUP (
+                           ORDER BY latency_ms), 0),
+                       coalesce(sum(CASE WHEN response_type <> 'refusal'
+                                         THEN 60 - latency_ms / 60000.0
+                                         ELSE 0 END), 0)
+                FROM query_logs
+                WHERE created_at >= now() - make_interval(days => %s)
+                  AND is_simulated = true
+            """, (days,))
+            d = cur.fetchone()
+            dt = d[0] or 0
+            out["demo"] = {
+                "note": "демонстрационная история: формулировки и даты синтетические, "
+                        "эмбеддинги и решения реальные",
+                "total": dt,
+                "success": d[1], "stale": d[2], "refusal": d[3],
+                "deflection_rate": round((d[1] + d[2]) / dt, 4) if dt else 0,
+                "refusal_rate": round(d[3] / dt, 4) if dt else 0,
+                "useful": d[4], "useless": d[5],
+                "useful_rate": (round(d[4] / (d[4] + d[5]), 4)
+                                if (d[4] + d[5]) else 0),
+                "p50_ms": round(float(d[6]), 1),
+                "hours_saved": round(float(d[7]) / 60.0, 1),
+            }
             cur.close()
         return out
     except Exception as exc:  # noqa: BLE001
@@ -463,17 +499,40 @@ async function loadStats() {
       fetch(api('api/metrics?days=30')).then(r => r.json()),
       fetch(api('api/stats')).then(r => r.json())
     ]);
-    const items = [
-      [m.total, 'запросов'],
-      [(m.deflection_rate * 100).toFixed(0) + '%', 'отвечено'],
-      [(m.refusal_rate * 100).toFixed(0) + '%', 'отказов'],
-      [m.p50_ms + ' мс', 'медиана'],
-      [s.documents ? s.documents.filter(d => d.is_active).length : 0, 'документов']
-    ];
-    document.getElementById('stats').innerHTML = items.map(
-      ([v, k]) => '<div class="stat"><div class="v">' + esc(v) +
-                  '</div><div class="k">' + esc(k) + '</div></div>'
-    ).join('');
+    const d = m.demo || {};
+    const hasReal = m.total > 0;
+
+    // Две группы цифр с явными подписями. Смешивать нельзя: реальные
+    // запросы — это измерение, демо-история — демонстрация механики.
+    let html = '';
+    if (hasReal) {
+      html += '<div class="stat" style="grid-column:1/-1;background:transparent;' +
+              'border-color:transparent;padding:0 0 2px;color:var(--dim);' +
+              'font-size:12px">Реальные запросы за ' + m.window_days + ' дн.</div>';
+      html += [
+        [m.total, 'запросов'],
+        [(m.deflection_rate * 100).toFixed(0) + '%', 'отвечено'],
+        [(m.refusal_rate * 100).toFixed(0) + '%', 'отказов'],
+        [m.p50_ms + ' мс', 'медиана']
+      ].map(([v, k]) => '<div class="stat"><div class="v">' + esc(v) +
+                        '</div><div class="k">' + esc(k) + '</div></div>').join('');
+    }
+    if (d.total) {
+      html += '<div class="stat" style="grid-column:1/-1;background:transparent;' +
+              'border-color:transparent;padding:8px 0 2px;color:var(--dim);' +
+              'font-size:12px">Демо-история за ' + m.window_days +
+              ' дн. (формулировки синтетические, пайплайн настоящий)</div>';
+      html += [
+        [d.total, 'запросов'],
+        [(d.deflection_rate * 100).toFixed(0) + '%', 'отвечено'],
+        [(d.refusal_rate * 100).toFixed(0) + '%', 'отказов'],
+        [d.p50_ms + ' мс', 'медиана'],
+        [d.hours_saved + ' ч', 'сэкономлено'],
+        [s.documents ? s.documents.filter(x => x.is_active).length : 0, 'документов']
+      ].map(([v, k]) => '<div class="stat"><div class="v">' + esc(v) +
+                        '</div><div class="k">' + esc(k) + '</div></div>').join('');
+    }
+    document.getElementById('stats').innerHTML = html;
     const cfgNote = s.threshold
       ? 'Порог отказа ' + Number(s.threshold).toFixed(2) +
         ', откалиброван на ' + esc(s.calibrated_on || '—') +
