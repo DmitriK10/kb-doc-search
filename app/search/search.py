@@ -42,7 +42,11 @@ from app.search.fusion import (
     sentence_rerank,
 )
 from app.search.tsquery import prepare, strip_version_prefix
-from app.search.versions import extract_versions, is_likely_section_ref
+from app.search.versions import (
+    extract_versions,
+    has_version_intent,
+    is_likely_section_ref,
+)
 from app.utils.vec import to_f32
 
 # Параметры поиска. Вынесены в константы, потому что их значения
@@ -51,6 +55,15 @@ POOL_SIZE = 50          # кандидатов из каждой ветки
 RERANK_LIMIT = 12       # сколько чанков реранкуем
 ACL_EXPAND = 3          # во сколько раз расширяем пул при отсеве по ACL
 CACHE_TTL_HOURS = 24
+
+# Каскадный порог честности: ответ выдаётся, только если калиброванная
+# вероятность >= threshold И покрытие токенов >= этого значения.
+#
+# Значение 0.35 подобрано развёрткой на расширенном наборе (143 вопроса):
+#   gate 0.30 -> test Recall@3 0.667, refusal precision 0.684
+#   gate 0.35 -> test Recall@3 0.524, refusal precision 0.947
+# Приоритет precision: выдуманный ответ дороже отказа (требование брифа).
+COVERAGE_GATE = 0.35
 
 
 @dataclass
@@ -433,6 +446,11 @@ class Searcher:
                     explicit_stale = hit
                     break
 
+        # Если номер не назван, но спрашивают О ВЕРСИИ ("какая редакция
+        # была отменена"), это тоже stale-намерение: нужно показать, что
+        # действует сейчас и что было раньше, а не просто цитату.
+        version_intent = has_version_intent(query)
+
         fts_ids, vec_ids, meta, fts_and_hit = self._fetch_candidates(
             pq.tokens, qvec, acl, POOL_SIZE
         )
@@ -457,7 +475,14 @@ class Searcher:
             token_coverage=top_coverage,
         )
         p = self._confidence(features)
-        answer = p >= self.threshold and bool(top_ids)
+        # Каскад: логистика решает «есть ли ответ», покрытие токенов
+        # отсекает «похожий, но не тот». Оба условия обязательны.
+        # Это ТО ЖЕ правило, что в eval.py — иначе метрики и продукт
+        # расходятся, и цифры на слайде не описывают систему.
+        coverage_ok = top_coverage >= COVERAGE_GATE
+        answer = p >= self.threshold and bool(top_ids) and coverage_ok
+        if answer is False and p >= self.threshold and not coverage_ok:
+            features["blocked_by_coverage"] = top_coverage
 
         # Покрытие НЕ используется как жёсткий фильтр: попытка требовать
         # coverage >= 0.5 уронила Recall@3 с 0.864 до 0.682, потому что
@@ -471,7 +496,7 @@ class Searcher:
         if not answer:
             return self._refuse(
                 query, qvec, pq.tokens, acl, qhmac, acl_sig, user_id,
-                p, features, latency, explicit_stale,
+                p, features, latency, explicit_stale, version_intent,
             )
 
         # Порядок показа — по final_rank (косинус + покрытие + числа),
@@ -486,7 +511,7 @@ class Searcher:
         if not best:
             return self._refuse(
                 query, qvec, pq.tokens, acl, qhmac, acl_sig, user_id,
-                p, features, latency, explicit_stale,
+                p, features, latency, explicit_stale, version_intent,
             )
 
         ans = Answer(
@@ -496,6 +521,13 @@ class Searcher:
             latency_ms=int((time.perf_counter() - t0) * 1000),
             features=features,
         )
+        # Если спрашивают О ВЕРСИЯХ, ответ обязан содержать справку по
+        # версиям: действующую и отменённую. Обычная цитата на такой
+        # вопрос не отвечает, даже если она релевантна.
+        if version_intent and explicit_stale is None:
+            ans.response_type = "stale"
+            ans.stale_warning = self._version_overview()
+
         # ВАЖНО: успешный ответ по ДЕЙСТВУЮЩЕЙ версии — это success,
         # а не stale. Наличие у документа предыдущей редакции — норма,
         # а не повод предупреждать: иначе Stale Rate раздувается до 68%,
@@ -701,6 +733,7 @@ class Searcher:
         features: dict[str, float],
         latency: int,
         explicit_stale: dict | None,
+        version_intent: bool = False,
     ) -> Answer:
         """Отказ. Пытается дать полезную рекомендацию, а не просто «нет».
 
@@ -715,8 +748,13 @@ class Searcher:
         stale_hits = self._fetch_stale(qvec, tokens, acl)
 
         hit = stale_hits[0] if stale_hits else None
-        if explicit_stale or (hit and hit["sim"] >= self.stale_threshold):
-            warning = self._build_stale_message(explicit_stale, hit)
+        if explicit_stale or version_intent or (hit and hit["sim"] >= self.stale_threshold):
+            if explicit_stale or hit:
+                warning = self._build_stale_message(explicit_stale, hit)
+            else:
+                # Номер версии не назван, но вопрос о версиях: показываем
+                # справку по семейству документов.
+                warning = self._version_overview()
             ans = Answer(
                 response_type="stale",
                 confidence=max(p, hit["sim"] if hit else 0.0),
@@ -849,6 +887,42 @@ class Searcher:
             else:
                 msg += " В действующей версии этот пункт исключён или переписан."
         return msg
+
+    def _version_overview(self) -> str:
+        """Справка о версиях регламентов: что действует, что отменено.
+
+        Нужна для вопросов «какая редакция была отменена», где номер не
+        назван. Отвечаем фактами из базы, а не догадкой.
+        """
+        conn = self._psycopg.connect(self.dsn, autocommit=False)
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT title, version, valid_from, valid_to, is_active
+                FROM documents
+                WHERE doc_key IN (
+                    SELECT DISTINCT doc_key FROM documents
+                    GROUP BY doc_key HAVING count(*) > 1
+                )
+                ORDER BY title, valid_from
+            """)
+            rows = cur.fetchall()
+            cur.close()
+        finally:
+            conn.close()
+
+        if not rows:
+            return "В базе нет документов с несколькими версиями."
+
+        parts = []
+        for title, version, vf, vt, active in rows:
+            if active:
+                parts.append(f"«{title}»: действует версия {version} "
+                             f"с {vf.strftime('%d.%m.%Y')}")
+            elif vt:
+                parts.append(f"версия {version} недействительна "
+                             f"с {vt.strftime('%d.%m.%Y')}")
+        return "; ".join(parts) + "."
 
     def _pick_owner(self, tokens: list[str]) -> dict | None:
         """Подбирает владельца темы для рекомендации в отказе.

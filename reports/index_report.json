@@ -1,0 +1,609 @@
+{
+  "documents": 30,
+  "indexed": 30,
+  "skipped": 0,
+  "failed": 0,
+  "elapsed_s": 2.78,
+  "results": [
+    {
+      "file": "instrukciya_crm_v1.3.docx",
+      "status": "indexed",
+      "doc_key": "instrukciya_crm",
+      "version": "1.3",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 36.2,
+      "stats": {
+        "n": 3,
+        "min": 71,
+        "p50": 83,
+        "p90": 209,
+        "max": 209,
+        "mean": 121.0,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "instrukciya_pechat_v1.2.docx",
+      "status": "indexed",
+      "doc_key": "instrukciya_pechat",
+      "version": "1.2",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 29.6,
+      "stats": {
+        "n": 3,
+        "min": 72,
+        "p50": 119,
+        "p90": 130,
+        "max": 130,
+        "mean": 107.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "instrukciya_pozharnaya_v1.1.docx",
+      "status": "indexed",
+      "doc_key": "instrukciya_pozharnaya",
+      "version": "1.1",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 23.7,
+      "stats": {
+        "n": 2,
+        "min": 53,
+        "p50": 224,
+        "p90": 224,
+        "max": 224,
+        "mean": 138.5,
+        "too_short": 1,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "politika_ib_v3.0.docx",
+      "status": "indexed",
+      "doc_key": "politika_ib",
+      "version": "3.0",
+      "chunks": 3,
+      "sentences": 6,
+      "embed_ms": 29.2,
+      "stats": {
+        "n": 3,
+        "min": 99,
+        "p50": 131,
+        "p90": 252,
+        "max": 252,
+        "mean": 160.7,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "polozhenie_komandirovki_v1.4.docx",
+      "status": "indexed",
+      "doc_key": "polozhenie_komandirovki",
+      "version": "1.4",
+      "chunks": 4,
+      "sentences": 7,
+      "embed_ms": 36.4,
+      "stats": {
+        "n": 4,
+        "min": 113,
+        "p50": 209,
+        "p90": 213,
+        "max": 213,
+        "mean": 180.2,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "polozhenie_komtaina_v2.0.docx",
+      "status": "indexed",
+      "doc_key": "polozhenie_komtaina",
+      "version": "2.0",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 47.1,
+      "stats": {
+        "n": 3,
+        "min": 81,
+        "p50": 84,
+        "p90": 206,
+        "max": 206,
+        "mean": 123.7,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "polozhenie_otpuska_v2.2.docx",
+      "status": "indexed",
+      "doc_key": "polozhenie_otpuska",
+      "version": "2.2",
+      "chunks": 3,
+      "sentences": 6,
+      "embed_ms": 28.1,
+      "stats": {
+        "n": 3,
+        "min": 76,
+        "p50": 181,
+        "p90": 224,
+        "max": 224,
+        "mean": 160.3,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "polozhenie_premii_v1.2.docx",
+      "status": "indexed",
+      "doc_key": "polozhenie_premii",
+      "version": "1.2",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 20.5,
+      "stats": {
+        "n": 2,
+        "min": 69,
+        "p50": 281,
+        "p90": 281,
+        "max": 281,
+        "mean": 175.0,
+        "too_short": 1,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "polozhenie_udalenka_v1.1.docx",
+      "status": "indexed",
+      "doc_key": "polozhenie_udalenka",
+      "version": "1.1",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 33.0,
+      "stats": {
+        "n": 3,
+        "min": 65,
+        "p50": 80,
+        "p90": 230,
+        "max": 230,
+        "mean": 125.0,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_arhiv_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_arhiv",
+      "version": "1.0",
+      "chunks": 3,
+      "sentences": 6,
+      "embed_ms": 32.0,
+      "stats": {
+        "n": 3,
+        "min": 69,
+        "p50": 141,
+        "p90": 150,
+        "max": 150,
+        "mean": 120.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_avans_otchet_v1.1.docx",
+      "status": "indexed",
+      "doc_key": "reg_avans_otchet",
+      "version": "1.1",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 48.1,
+      "stats": {
+        "n": 3,
+        "min": 59,
+        "p50": 127,
+        "p90": 176,
+        "max": 176,
+        "mean": 120.7,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_deloproizvodstvo_v1.5.docx",
+      "status": "indexed",
+      "doc_key": "reg_deloproizvodstvo",
+      "version": "1.5",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 20.7,
+      "stats": {
+        "n": 3,
+        "min": 64,
+        "p50": 78,
+        "p90": 175,
+        "max": 175,
+        "mean": 105.7,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_dogovora_v2.3.docx",
+      "status": "indexed",
+      "doc_key": "reg_dogovora",
+      "version": "2.3",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 23.5,
+      "stats": {
+        "n": 3,
+        "min": 75,
+        "p50": 135,
+        "p90": 171,
+        "max": 171,
+        "mean": 127.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_dogovora_v3.1.docx",
+      "status": "indexed",
+      "doc_key": "reg_dogovora",
+      "version": "3.1",
+      "chunks": 9,
+      "sentences": 16,
+      "embed_ms": 158.9,
+      "stats": {
+        "n": 9,
+        "min": 65,
+        "p50": 106,
+        "p90": 389,
+        "max": 389,
+        "mean": 163.9,
+        "too_short": 6,
+        "too_long": 0,
+        "table_rows": 4
+      }
+    },
+    {
+      "file": "reg_dostup_sistemy_v1.3.docx",
+      "status": "indexed",
+      "doc_key": "reg_dostup_sistemy",
+      "version": "1.3",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 27.8,
+      "stats": {
+        "n": 3,
+        "min": 57,
+        "p50": 61,
+        "p90": 165,
+        "max": 165,
+        "mean": 94.3,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_epodpis_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_epodpis",
+      "version": "1.0",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 23.4,
+      "stats": {
+        "n": 3,
+        "min": 45,
+        "p50": 69,
+        "p90": 213,
+        "max": 213,
+        "mean": 109.0,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_instruktazh_v1.4.docx",
+      "status": "indexed",
+      "doc_key": "reg_instruktazh",
+      "version": "1.4",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 42.2,
+      "stats": {
+        "n": 3,
+        "min": 55,
+        "p50": 57,
+        "p90": 197,
+        "max": 197,
+        "mean": 103.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_izmeneniya_v2.1.docx",
+      "status": "indexed",
+      "doc_key": "reg_izmeneniya",
+      "version": "2.1",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 25.0,
+      "stats": {
+        "n": 3,
+        "min": 49,
+        "p50": 60,
+        "p90": 188,
+        "max": 188,
+        "mean": 99.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_matoтветственность_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_matoтветственность",
+      "version": "1.0",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 23.4,
+      "stats": {
+        "n": 2,
+        "min": 70,
+        "p50": 218,
+        "p90": 218,
+        "max": 218,
+        "mean": 144.0,
+        "too_short": 1,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_medosmotr_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_medosmotr",
+      "version": "1.0",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 26.4,
+      "stats": {
+        "n": 2,
+        "min": 75,
+        "p50": 196,
+        "p90": 196,
+        "max": 196,
+        "mean": 135.5,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_nda_v1.1.docx",
+      "status": "indexed",
+      "doc_key": "reg_nda",
+      "version": "1.1",
+      "chunks": 3,
+      "sentences": 6,
+      "embed_ms": 29.6,
+      "stats": {
+        "n": 3,
+        "min": 103,
+        "p50": 174,
+        "p90": 234,
+        "max": 234,
+        "mean": 170.3,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_obuchenie_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_obuchenie",
+      "version": "1.0",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 42.5,
+      "stats": {
+        "n": 2,
+        "min": 66,
+        "p50": 296,
+        "p90": 296,
+        "max": 296,
+        "mean": 181.0,
+        "too_short": 1,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_pretenzii_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_pretenzii",
+      "version": "1.0",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 21.0,
+      "stats": {
+        "n": 2,
+        "min": 59,
+        "p50": 163,
+        "p90": 163,
+        "max": 163,
+        "mean": 111.0,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_priemka_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_priemka",
+      "version": "1.0",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 30.3,
+      "stats": {
+        "n": 3,
+        "min": 59,
+        "p50": 61,
+        "p90": 181,
+        "max": 181,
+        "mean": 100.3,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_rastorzhenie_v1.2.docx",
+      "status": "indexed",
+      "doc_key": "reg_rastorzhenie",
+      "version": "1.2",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 69.4,
+      "stats": {
+        "n": 3,
+        "min": 59,
+        "p50": 60,
+        "p90": 212,
+        "max": 212,
+        "mean": 110.3,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_shtat_v1.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_shtat",
+      "version": "1.0",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 25.7,
+      "stats": {
+        "n": 2,
+        "min": 64,
+        "p50": 214,
+        "p90": 214,
+        "max": 214,
+        "mean": 139.0,
+        "too_short": 1,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_svyaz_v1.1.docx",
+      "status": "indexed",
+      "doc_key": "reg_svyaz",
+      "version": "1.1",
+      "chunks": 2,
+      "sentences": 4,
+      "embed_ms": 22.3,
+      "stats": {
+        "n": 2,
+        "min": 61,
+        "p50": 182,
+        "p90": 182,
+        "max": 182,
+        "mean": 121.5,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_uchet_vremeni_v2.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_uchet_vremeni",
+      "version": "2.0",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 76.1,
+      "stats": {
+        "n": 3,
+        "min": 46,
+        "p50": 52,
+        "p90": 196,
+        "max": 196,
+        "mean": 98.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_zakupki_v2.0.docx",
+      "status": "indexed",
+      "doc_key": "reg_zakupki",
+      "version": "2.0",
+      "chunks": 3,
+      "sentences": 6,
+      "embed_ms": 33.0,
+      "stats": {
+        "n": 3,
+        "min": 104,
+        "p50": 149,
+        "p90": 296,
+        "max": 296,
+        "mean": 183.0,
+        "too_short": 2,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    },
+    {
+      "file": "reg_zayavki_it_v2.1.docx",
+      "status": "indexed",
+      "doc_key": "reg_zayavki_it",
+      "version": "2.1",
+      "chunks": 3,
+      "sentences": 5,
+      "embed_ms": 25.0,
+      "stats": {
+        "n": 3,
+        "min": 83,
+        "p50": 84,
+        "p90": 187,
+        "max": 187,
+        "mean": 118.0,
+        "too_short": 3,
+        "too_long": 0,
+        "table_rows": 0
+      }
+    }
+  ]
+}

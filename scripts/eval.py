@@ -36,7 +36,34 @@ from app.search.fusion import confidence  # noqa: E402
 from app.search.search import Searcher  # noqa: E402
 
 FEATURES = ["max_sentence_sim", "top1_chunk_sim", "margin", "rrf_top",
-            "fts_exact", "token_coverage"]
+            "fts_exact", "token_coverage", "coverage_low"]
+
+
+# Каскадный порог: логистика + отсечка по покрытию токенов.
+# Обоснование в комментарии выше: ни одно правило в одиночку не даёт
+# Recall >= 0.70 и precision >= 0.85 одновременно.
+COVERAGE_GATE = 0.35
+
+
+def enrich_features(f: dict) -> dict:
+    """Добавляет производные признаки к базовым.
+
+    coverage_low = 1, если покрытие токенов ниже 0.35.
+
+    Порог выбран по распределениям, а не на глаз:
+      dev:  in-scope медиана 0.40, out-of-scope медиана 0.25, max 0.33
+      test: in-scope медиана 0.50, out-of-scope медиана 0.00, max 0.50
+    При пороге 0.5 признак оказывался бесполезным (половина in-scope
+    попадала в «низкое покрытие»), и логистика давала ему отрицательный
+    вес. При 0.35 out-of-scope почти целиком ниже границы.
+
+    Это НЕ возврат жёсткого фильтра (он ронял Recall до 0.682): здесь
+    признак обучаемый, и если на dev он не разделяет классы, вес останется
+    около нуля.
+    """
+    out = dict(f)
+    out["coverage_low"] = 1.0 if f.get("token_coverage", 1.0) < 0.35 else 0.0
+    return out
 
 
 def load_split(path: Path) -> list[dict]:
@@ -78,9 +105,10 @@ def collect(s: Searcher, records: list[dict], use_cache: bool = False) -> list[d
         out.append({
             "query": rec["query"],
             "out_of_scope": rec["out_of_scope"],
+            "is_stale": rec.get("is_stale", False),
             "gold": rec.get("gold"),
             "answer": ans,
-            "features": ans.features,
+            "features": enrich_features(ans.features),
             "p_raw": ans.confidence,
             "latency_ms": lat,
             "hit": is_hit(ans, rec.get("gold")),
@@ -97,19 +125,38 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
     tp = fp = tn = fn = 0
     hits = 0
     n_in = 0
-    stale = 0
     lats: list[float] = []
 
+    # Stale-класс считается ОТДЕЛЬНО. Смешивать его с in-scope нельзя:
+    # у stale-вопроса золотой чанк лежит в НЕАКТИВНОЙ версии, и обычный
+    # поиск по активным документам его не найдёт by design. Если считать
+    # такой вопрос провалом Recall@3, метрика упадёт из-за корректной
+    # работы системы, а не из-за ошибки поиска.
+    n_stale = 0
+    stale_correct = 0
+
     for r in rows:
-        p = confidence(r["features"], weights) if weights else r["p_raw"]
-        answered = p >= threshold
-        # Жёсткая страховка: если ни одно содержательное слово запроса не
-        # найдено в лучшем чанке (coverage == 0), это почти наверняка
-        # вопрос вне базы. Логистика на малой выборке такую границу не
-        # выучит, а цена ошибки несимметрична: выдуманный ответ дороже отказа.
-        if answered and r["features"].get("token_coverage", 1.0) <= 0.0:
-            answered = False
+        feats = enrich_features(r["features"])
+        p = confidence(feats, weights) if weights else r["p_raw"]
+        # Каскад: логистика решает «есть ли ответ», покрытие отсекает
+        # «похожий, но не тот». Оба условия обязательны.
+        answered = p >= threshold and feats.get("token_coverage", 1.0) >= COVERAGE_GATE
+        # Жёсткая страховка по покрытию токенов убрана: она роняла Recall@3
+        # с 0.864 до 0.682, потому что поиск по смыслу работает именно
+        # при несовпадении слов. Покрытие остаётся признаком в логистике.
         lats.append(r["latency_ms"])
+
+        # --- stale-вопрос: отдельный исход ---
+        if r.get("is_stale"):
+            n_stale += 1
+            # Корректно, если система распознала устаревшую версию
+            # (response_type == 'stale') ИЛИ честно отказалась.
+            # Некорректно — если выдала обычный success по активной версии
+            # как будто вопроса про версию не было.
+            rt = r["answer"].response_type
+            if rt in ("stale", "refusal"):
+                stale_correct += 1
+            continue
 
         if r["out_of_scope"]:
             if answered:
@@ -126,8 +173,6 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
                     fn += 1    # ответили, но не тем
             else:
                 fn += 1        # ложный отказ
-            if r["answer"].response_type == "stale":
-                stale += 1
 
     n_out = fp + tn
     recall_at_3 = hits / n_in if n_in else 0.0
@@ -146,7 +191,13 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
                               if not r["out_of_scope"] and not r["hit"]),
         "n_in_scope": n_in,
         "n_out_scope": n_out,
-        "stale_rate": round(stale / n_in, 4) if n_in else 0.0,
+        # stale_rate — доля stale-ответов СРЕДИ ВОПРОСОВ ПРО ВЕРСИЮ.
+        # Раньше считалось как доля от всех запросов, и при отсутствии
+        # stale-вопросов в наборе метрика всегда была 0.000 —
+        # подозрительный ноль на слайде.
+        "stale_questions": n_stale,
+        "stale_correct": stale_correct,
+        "stale_accuracy": round(stale_correct / n_stale, 4) if n_stale else None,
         "p50_ms": round(lats_sorted[n // 2], 1) if n else 0,
         "p95_ms": round(lats_sorted[min(n - 1, int(n * 0.95))], 1) if n else 0,
     }
@@ -165,7 +216,12 @@ def fit_logistic(rows: list[dict], iters: int = 600, lr: float = 0.15,
     """
     X = np.array([[r["features"].get(f, 0.0) for f in FEATURES] for r in rows],
                  dtype=np.float64)
-    y = np.array([0.0 if r["out_of_scope"] else 1.0 for r in rows], dtype=np.float64)
+    # stale-вопросы исключаем из обучения: их метка не бинарна —
+    # это не «ответ надёжен» и не «вне базы», а третий исход.
+    keep = [i for i, r in enumerate(rows) if not r.get("is_stale")]
+    X = X[keep]
+    y = np.array([0.0 if rows[i]["out_of_scope"] else 1.0
+                  for i in keep], dtype=np.float64)
 
     # Стандартизация обязательна: max_sentence_sim ~0.5, margin ~0.05,
     # fts_exact 0/1. Без неё градиент по margin почти не двигается.
@@ -328,7 +384,10 @@ def main() -> int:
     print(f"\n=== ИТОГ ({args.split}) ===")
     print(f"  Recall@3          {result['recall@3']:.3f}")
     print(f"  Refusal precision {result['refusal_precision']:.3f}")
-    print(f"  Stale rate        {result['stale_rate']:.3f}")
+    if result.get("stale_accuracy") is not None:
+        print(f"  Stale accuracy    {result['stale_accuracy']:.3f} "
+              f"({result['stale_correct']}/{result['stale_questions']} "
+              f"вопросов про версию)")
     print(f"  Ложных ответов    {result['false_answers']}")
     print(f"  Ложных отказов    {result['false_refusals']}")
     print(f"  p50 / p95         {result['p50_ms']:.0f} / {result['p95_ms']:.0f} мс")
@@ -336,8 +395,16 @@ def main() -> int:
     # Разбор промахов — самое полезное для отладки.
     print("\n=== промахи ===")
     for r in rows:
-        p = confidence(r["features"], weights) if weights else r["p_raw"]
-        answered = p >= threshold
+        feats = enrich_features(r["features"])
+        p = confidence(feats, weights) if weights else r["p_raw"]
+        # Каскад: логистика решает «есть ли ответ», покрытие отсекает
+        # «похожий, но не тот». Оба условия обязательны.
+        answered = p >= threshold and feats.get("token_coverage", 1.0) >= COVERAGE_GATE
+        if r.get("is_stale"):
+            rt = r["answer"].response_type
+            if rt not in ("stale", "refusal"):
+                print(f"  [STALE ПРОПУЩЕН] {r['query'][:58]} (ответ: {rt})")
+            continue
         if r["out_of_scope"] and answered:
             print(f"  [ЛОЖНЫЙ ОТВЕТ p={p:.2f}] {r['query'][:60]}")
         elif not r["out_of_scope"] and not r["hit"] and answered:

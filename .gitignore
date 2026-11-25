@@ -21,7 +21,10 @@ __pycache__/
 
 # Отчёты прогонов: генерируются заново, в git только сводка
 reports/*.json
-!reports/baseline.json
+!reports/eval_*.json
+!reports/smoke_db_*.json
+!reports/schema_*.json
+!reports/index_report.json
 
 # Корпус генерируется скриптом — не храним бинарники DOCX
 data/corpus/*.docx
