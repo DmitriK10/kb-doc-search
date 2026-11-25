@@ -262,7 +262,8 @@ class Searcher:
                            -- подтверждает содержание цитаты.
                            WHERE kb_lemma(lem) IS NOT NULL
                              AND kb_tsv(c.body) @@ to_tsquery('russian', lem)
-                       ) / NULLIF(cardinality(toks.lemmas), 0) AS coverage
+                       ) / NULLIF(cardinality(toks.lemmas), 0) AS coverage,
+                       c.chunk_type
                 FROM chunks c
                 JOIN documents d ON d.id = c.document_id
                 CROSS JOIN toks
@@ -277,6 +278,7 @@ class Searcher:
                     "access_groups": r[9], "owner_role": r[10],
                     "owner_contact": r[11], "chunk_sim": float(r[12] or 0.0),
                     "coverage": float(r[13]) if r[13] is not None else 1.0,
+                    "chunk_type": r[14],
                 }
             cur.close()
 
@@ -665,11 +667,20 @@ class Searcher:
             else:
                 cand = [(c, t, e) for (c, t, e) in quote_input if c == cid]
                 quote = self._best_quote_sentence(qvec, cand, query) or body
+            # Если цитата — конкретный пункт, номер раздела берём ИЗ ЦИТАТЫ.
+            # Иначе пользователь видит «п.3.1», а цитата про «3.2»: ссылка
+            # не соответствует тому, что процитировано. Чанк склеен из
+            # пунктов 3.1-3.4, поэтому его section_path — путь первого.
+            quote_path = m["section_path"]
+            qm = re.match(r"^\s*(\d+(?:\.\d+)*)\.", quote)
+            if qm and m["chunk_type"] == "item":
+                quote_path = qm.group(1)
+
             out.append(Source(
                 chunk_id=cid,
                 doc_title=m["doc_title"],
                 version=m["version"],
-                section_path=m["section_path"],
+                section_path=quote_path,
                 section_title=m["section_title"],
                 source_path=m["source_path"],
                 quote=quote,
