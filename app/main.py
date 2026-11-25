@@ -325,8 +325,13 @@ INDEX_HTML = """<!DOCTYPE html>
 // Базовый путь: страница может отдаваться и в корне, и под префиксом /kb/.
 // Абсолютные /api/... работают только в корне; под префиксом они уходят
 // в чужой server-блок nginx и дают 404. Поэтому путь вычисляется из URL.
-const BASE = location.pathname.replace(/\/[^\/]*$/, '/');
-const api = (p) => BASE + p.replace(/^\//, '');
+// Базовый путь без регэкспов: строка проходит через Python, и обратный
+// слэш в регулярном выражении превращается в escape-последовательность
+// Python, ломая JS целиком. split/pop от экранирования не зависит.
+const pathParts = location.pathname.split('/');
+pathParts.pop();
+const BASE = pathParts.join('/') + '/';
+const api = (p) => BASE + p.split('/').filter(Boolean).join('/');
 
 const EXAMPLES = [
   "кто подписывает агентский договор свыше миллиона",
@@ -416,12 +421,12 @@ function render(d) {
          '<button data-v="0">Бесполезно</button></div>';
   } else {
     h += '<div class="meta">В текущих регламентах нет прямого ответа на вопрос.</div>' +
-         '<blockquote>Возможные причины: регламент устарел или случай не описан.\n' +
+         '<blockquote>Возможные причины: регламент устарел или случай не описан.\\n' +
          'Рекомендую обратиться ' +
          (d.owner_role ? 'к специалисту: <b>' + esc(d.owner_role) + '</b>'
                        : 'к владельцу базы знаний') +
          (d.owner_contact ? ' (' + esc(d.owner_contact) + ')' : '') +
-         '\nили создать заявку на обновление базы знаний.</blockquote>';
+         '\\nили создать заявку на обновление базы знаний.</blockquote>';
     if (d.refusal_reason) {
       h += '<div class="src">Причина: <code>' + esc(d.refusal_reason) + '</code></div>';
     }
