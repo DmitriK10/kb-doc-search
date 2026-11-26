@@ -51,7 +51,10 @@ WHERE NOT is_simulated
       encode(sha256('sweep'::bytea), 'hex'),
       encode(sha256('test'::bytea), 'hex'),
       encode(sha256('u'::bytea), 'hex'),
-      encode(sha256('u1'::bytea), 'hex')
+      encode(sha256('u1'::bytea), 'hex'),
+      encode(sha256('cm'::bytea), 'hex'),
+      encode(sha256('cm-service'::bytea), 'hex'),
+      encode(sha256('matrix'::bytea), 'hex')
   );
 
 -- ВАЖНО: 'web-demo' НЕ помечается служебным. До появления session-id

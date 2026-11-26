@@ -87,7 +87,7 @@ def main() -> int:
     details = []
 
     for r in rows:
-        ans = s.search(r["query"], user_id="cm", use_cache=False)
+        ans = s.search(r["query"], user_id="cm-service", use_cache=False)
 
         if r.get("is_stale"):
             stale_total += 1
