@@ -34,7 +34,12 @@ from datetime import datetime, timezone
 import numpy as np
 
 from app.search.encoder import acl_signature, to_pgvector
-from app.search.clarify import Clarification, build_combined_query, detect
+from app.search.clarify import (
+    Clarification,
+    build_combined_query,
+    detect,
+    detect_cross_document,
+)
 from app.search.fusion import (
     confidence_features,
     final_rank,
@@ -600,6 +605,35 @@ class Searcher:
         )
         answer = confident or tentative
 
+        # П. 7.5б: междокументная неоднозначность.
+        # Если два регламента отвечают по-разному, уверенный ответ из
+        # одного скрывает второй и подаёт неполный ответ как полный.
+        # Проверяем ДО решения «ответить»: это важнее уверенности.
+        cross_doc = None
+        if top_ids:
+            cands_x = []
+            for cid in top_ids:
+                m = meta.get(cid, {})
+                cands_x.append({
+                    "doc_title": m.get("doc_title", ""),
+                    "section_path": m.get("section_path", ""),
+                    "section_title": m.get("section_title", ""),
+                    "body": m.get("body", ""),
+                    "sim": float(rerank.get(cid, 0.0)),
+                })
+            cross = detect_cross_document(cands_x, query)
+            if cross is not None:
+                cross_doc = {
+                    "question": cross.question,
+                    "doc_title": cross.doc_title,
+                    "reason": cross.reason,
+                    "options": [
+                        {"label": o.label, "section_path": o.section_path,
+                         "doc_title": o.doc_title, "score": o.score}
+                        for o in cross.options
+                    ],
+                }
+
         # КЕЙС 3: проверяем, есть ли одобренный ответ службы качества.
         # Он приоритетнее обычного поиска: это ответ человека на такой же
         # вопрос. Замыкание цикла: отказ -> ответ службы -> повторный
@@ -691,6 +725,21 @@ class Searcher:
         # проверьте», а уточняющий вопрос даёт шанс получить уверенный ответ.
         # Бриф (пример): на «ключ не пришёл, а оплата прошла» агент должен
         # спросить, какой сценарий имеется в виду, а не выдавать догадку.
+        # Междокументная неоднозначность важнее всего: она означает,
+        # что ответ зависит от контура, а не что он «слабый».
+        if cross_doc is not None:
+            ans = Answer(
+                response_type="refusal",
+                confidence=p,
+                sources=[],
+                refusal_reason="ambiguous",
+                latency_ms=int((time.perf_counter() - t0) * 1000),
+                features=features,
+                clarification=cross_doc,
+            )
+            self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+            return ans
+
         if tentative and clarification is not None:
             ans = Answer(
                 response_type="refusal",

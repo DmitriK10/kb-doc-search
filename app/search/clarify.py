@@ -266,3 +266,102 @@ def build_combined_query(original: str, option: ClarificationOption) -> str:
     """
     label = option.label.rstrip("…").strip()
     return f"{original} {label}"
+
+
+# ---------------------------------------------------------------------------
+# Междокументная неоднозначность (п. 7.5б брифинга)
+#
+# ДЕФЕКТ: на вопрос «кто назначает РП» система давала УВЕРЕННЫЙ ответ
+# из одного регламента. По существу ответ зависит от этапа:
+#   ТЗТ п. 4.1            — на пресейле: Руководитель отдела управления проектами
+#   Проектная ДИБ п. 2.1  — в проекте: Координатор департамента
+# Это два разных ответа на один вопрос. Уверенная цитата из одного
+# документа скрывает второй — то есть пользователь получает неполный
+# ответ, поданный как полный.
+#
+# Отличие от detect(): там развилка ВНУТРИ одного документа (выбор
+# сценария), здесь — МЕЖДУ документами (выбор этапа или контура).
+# ---------------------------------------------------------------------------
+
+MIN_CROSS_DOC_SIM = 0.50
+
+
+def detect_cross_document(
+    candidates: list[dict],
+    query: str,
+    min_sim: float = MIN_CROSS_DOC_SIM,
+    max_margin: float = MAX_MARGIN,
+) -> Clarification | None:
+    """Два регламента отвечают на один вопрос по-разному.
+
+    Срабатывает, когда в топ-3 есть релевантные чанки из РАЗНЫХ документов
+    с близкими косинусами: значит вопрос затрагивает несколько контуров,
+    и выбрать один молча нельзя.
+    """
+    if len(candidates) < 2:
+        return None
+
+    relevant = [c for c in candidates if c.get("sim", 0) >= min_sim]
+    if len(relevant) < 2:
+        return None
+    if len({c["doc_title"] for c in relevant}) < 2:
+        return None
+
+    # По одному лучшему чанку с каждого документа.
+    best_per_doc: dict[str, dict] = {}
+    for c in relevant:
+        d = c["doc_title"]
+        if d not in best_per_doc or c["sim"] > best_per_doc[d]["sim"]:
+            best_per_doc[d] = c
+
+    picked = sorted(best_per_doc.values(), key=lambda c: -c["sim"])[:MAX_OPTIONS]
+    if len(picked) < 2:
+        return None
+
+    # Большой разрыв означает, что ответ однозначен: второй документ
+    # просто близок по теме, а не противоречит первому.
+    margin = picked[0]["sim"] - picked[-1]["sim"]
+    if margin > max_margin:
+        return None
+
+    options: list[ClarificationOption] = []
+    for c in picked:
+        doc_short = short_doc_name(c["doc_title"])
+        section = (c.get("section_path") or "").strip()
+        # Подпись: краткое имя документа + пункт. Читается за две секунды
+        # и сразу показывает, ОТКУДА будет ответ.
+        label = f"{doc_short}, п. {section}" if section else doc_short
+        options.append(ClarificationOption(
+            label=label, section_path=section,
+            doc_title=c["doc_title"], score=round(float(c["sim"]), 4),
+        ))
+
+    if len(options) < MIN_OPTIONS:
+        return None
+
+    return Clarification(
+        question=("На этот вопрос отвечают разные регламенты, и ответ зависит "
+                  "от этапа или контура. Уточните, что имеется в виду:"),
+        options=options,
+        doc_title=", ".join(short_doc_name(c["doc_title"]) for c in picked),
+        reason=f"разные документы, разрыв косинусов {margin:.3f}",
+    )
+
+
+# Краткие имена документов — только для кнопок.
+# В текстах и источниках всегда полное название. Требование «без голого
+# ДИБ» соблюдено: здесь «Пресейл ДИБ» и «Проектная ДИБ», их не спутать.
+DOC_SHORT = {
+    "Организация проектной деятельности": "ТЗТ",
+    "Пресейловая деятельность Дирекции ИБ": "Пресейл ДИБ",
+    "Проектная деятельность ДБРЦТ": "ДБРЦТ",
+    "Проектная деятельность Дирекции ИБ": "Проектная ДИБ",
+}
+
+
+def short_doc_name(title: str) -> str:
+    """Краткое имя документа для кнопки уточнения."""
+    for key, short in DOC_SHORT.items():
+        if title.startswith(key) or key.startswith(title):
+            return short
+    return title[:30]
