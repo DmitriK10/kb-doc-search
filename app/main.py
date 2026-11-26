@@ -584,6 +584,43 @@ async def conflict_branch(req: ConflictBranch) -> dict:
     return res
 
 
+class ConflictRequest(BaseModel):
+    """Запрос в службу качества прямо из развилки."""
+
+    query: str = Field(..., min_length=3, max_length=500)
+    reason: str = Field(default="", max_length=200)
+
+
+@app.post("/api/conflict/request")
+async def conflict_request(req: ConflictRequest) -> dict:
+    """Создаёт запрос K-N, когда развилку разрешить не удалось.
+
+    Переиспользует тот же путь, что отказ: K-N, письмо владельцу,
+    запись в quality_requests. Новый обработчик не нужен.
+
+    Зачем: развилка может не разрешиться (пользователь не знает, какое
+    событие его). Тупик здесь недопустим — правильный исход это запрос
+    владельцу, ровно механика ТЗТ п. 2.8.
+    """
+    s: Searcher = _state["searcher"]
+    try:
+        qid = s._create_quality_request(
+            req.query, "conflict-fork", {}, [], {}
+        )
+        if qid is None:
+            raise HTTPException(500, "не удалось создать запрос")
+        return {
+            "ok": True,
+            "quality_request_id": qid,
+            "note": ("Запрос создан. Сотрудник службы качества сверит "
+                     "регламенты и ответит; ответ появится в базе знаний."),
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(500, str(exc)[:200]) from exc
+
+
 @app.get("/api/stats")
 async def stats() -> dict:
     """Состояние индекса и конфигурации — для панели и отладки."""
@@ -846,6 +883,13 @@ function render(d) {
            ' data-path="' + esc(cpath) + '"' +
            ' style="text-align:left;max-width:100%">' + esc(o.label) + '</button>';
     });
+    // Выход, если развилку разрешить не удалось: запрос владельцу.
+    // Тупик здесь недопустим — это механика ТЗТ п. 2.8.
+    if (cfl) {
+      h += '<button data-forkreq="1" style="background:transparent;' +
+           'border-color:var(--dim);color:var(--dim)">' +
+           'Не знаю — создать запрос в службу качества</button>';
+    }
     h += '</div>';
     h += '<div class="src" style="margin-top:10px">Основание: ' +
          esc(d.clarification.doc_title) + ' · ' +
@@ -883,7 +927,33 @@ function render(d) {
 }
 
 function bindClarification() {
+  // Кнопка запроса в службу качества: развилку разрешить не удалось.
+  const reqBtn = document.querySelector('#clar button[data-forkreq]');
+  if (reqBtn) {
+    reqBtn.onclick = async () => {
+      const out = document.getElementById('out');
+      const q = document.getElementById('q');
+      try {
+        const r = await fetch(api('api/conflict/request'), {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({query: q.value.trim(), reason: 'conflict-fork'})
+        }).then(x => x.json());
+        if (r.quality_request_id) {
+          out.innerHTML = '<div class="card"><div class="badge b-warn">' +
+            'ЗАПРОС В СЛУЖБУ КАЧЕСТВА</div>' +
+            '<div class="q">Запрос <b>' + esc(r.quality_request_id) +
+            '</b> создан.</div>' +
+            '<div class="meta">' + esc(r.note) + '</div></div>';
+          return;
+        }
+      } catch (e) { /* падаем в обычный поиск */ }
+      q.value = q.value.trim();
+      ask();
+    };
+  }
   document.querySelectorAll('#clar button').forEach(b => {
+    if (b.dataset.forkreq) return;
     b.onclick = async () => {
       const cid = b.dataset.cid || '';
       const cfl = b.dataset.cfl || '';
