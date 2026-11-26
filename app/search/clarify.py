@@ -283,7 +283,13 @@ def build_combined_query(original: str, option: ClarificationOption) -> str:
 # сценария), здесь — МЕЖДУ документами (выбор этапа или контура).
 # ---------------------------------------------------------------------------
 
-MIN_CROSS_DOC_SIM = 0.50
+MIN_CROSS_DOC_SIM = 0.62
+
+# Второе условие: пункт должен реально содержать слова вопроса.
+# Без него детектор срабатывал на шуме: на «штраф за налоговую
+# декларацию» косинусы тоже близки, но ответа в регламентах нет.
+# Покрытие >= 0.5 означает «слова вопроса есть в тексте пункта».
+MIN_CROSS_DOC_COVERAGE = 0.50
 
 
 def detect_cross_document(
@@ -301,7 +307,13 @@ def detect_cross_document(
     if len(candidates) < 2:
         return None
 
-    relevant = [c for c in candidates if c.get("sim", 0) >= min_sim]
+    # «Отвечающий» документ — тот, чей пункт содержит слова вопроса.
+    # Косинус без покрытия даёт ложные срабатывания на шуме.
+    relevant = [
+        c for c in candidates
+        if c.get("sim", 0) >= min_sim
+        and c.get("coverage", 0.0) >= MIN_CROSS_DOC_COVERAGE
+    ]
     if len(relevant) < 2:
         return None
     if len({c["doc_title"] for c in relevant}) < 2:

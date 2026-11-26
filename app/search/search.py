@@ -620,6 +620,11 @@ class Searcher:
                     "section_title": m.get("section_title", ""),
                     "body": m.get("body", ""),
                     "sim": float(rerank.get(cid, 0.0)),
+                    # Покрытие токенов обязательно: без него детектор
+                    # междокументных конфликтов срабатывает на шуме —
+                    # на «штраф за налоговую декларацию» косинусы тоже
+                    # близки, хотя ответа в регламентах нет.
+                    "coverage": float(m.get("coverage", 0.0)),
                 })
             cross = detect_cross_document(cands_x, query)
             if cross is not None:

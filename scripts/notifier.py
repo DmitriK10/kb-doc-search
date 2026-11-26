@@ -35,6 +35,72 @@ except ImportError:  # pragma: no cover
     httpx = None  # type: ignore[assignment]
 
 
+def format_email(request: dict, payload: dict) -> tuple[str, str]:
+    """Тема и тело письма владельцу.
+
+    Требование п. 3: номер запроса, текст вопроса, рекомендация.
+    Формат — рабочий документ, а не «уведомление системы»: владелец
+    должен понять за 10 секунд, что спрашивают и что делать.
+    """
+    qid = request.get("public_id") or "—"
+    question = request.get("question") or "—"
+    # Тема: из payload (алерты кластеров) или из ближайшего найденного
+    # документа. Без этого тема была «тема без названия» — владелец
+    # не понимал, о чём письмо, не открыв его.
+    topic = payload.get("topic") or ""
+    if not topic:
+        closest = request.get("closest_chunks") or []
+        if closest:
+            topic = closest[0].get("doc_title") or ""
+    if not topic:
+        # Последний резерв — сам вопрос, обрезанный по слову.
+        topic = (question[:60].rsplit(" ", 1)[0] + "…"
+                 if len(question) > 60 else question)
+    size = payload.get("size", 0)
+    owner = payload.get("owner_role") or "владелец не задан"
+
+    subject = f"[{qid}] Нет ответа в базе знаний: {topic[:60]}"
+
+    body_parts = [
+        f"Запрос № {qid}",
+        f"Владелец темы: {owner}",
+        "",
+        "ВОПРОС СОТРУДНИКА",
+        question,
+        "",
+        "ЧТО ПРОВЕРЕНО АГЕНТОМ",
+    ]
+    closest = request.get("closest_chunks") or []
+    if closest:
+        for c in closest[:3]:
+            body_parts.append(
+                f"  - {c.get('doc_title', '')}, п. {c.get('section_path', '')}: "
+                f"{(c.get('quote') or '')[:110]}"
+            )
+        body_parts.append("")
+        body_parts.append(
+            "Ни один из найденных фрагментов не отвечает на вопрос "
+            "с достаточной уверенностью."
+        )
+    else:
+        body_parts.append("  релевантных фрагментов не найдено")
+
+    body_parts += [
+        "",
+        "ЧТО НУЖНО СДЕЛАТЬ",
+        "1. Проверить, есть ли действующий регламент по теме.",
+        "2. Если есть — загрузить в базу знаний или дать ответ на этот запрос.",
+        "3. Если нет — создать документ.",
+        "",
+        f"За период по теме «{topic}» было {size} запросов без ответа.",
+        "",
+        "-- ",
+        "Агент поиска по корпоративным документам",
+        "(письмо сформировано автоматически, отвечать на него не нужно)",
+    ]
+    return subject, "\n".join(body_parts)
+
+
 def format_alert(payload: dict) -> str:
     """Текст уведомления владельцу.
 
@@ -76,6 +142,38 @@ def format_alert(payload: dict) -> str:
     return "\n".join(parts)
 
 
+def send_smtp(
+    host: str, port: int, to_addr: str, subject: str, text: str,
+    from_addr: str = "kb-agent@company.local",
+) -> bool:
+    """Отправка уведомления по электронной почте.
+
+    Почта — основной канал заказчика: их же регламенты предписывают
+    уведомлять по email (Проектная ДИБ п. 1.3, п. 2.1, п. 3.1, п. 7.3.1;
+    ДБРЦТ п. 7.1). Поэтому SMTP — дефолт, Telegram остаётся fallback.
+
+    В контуре: локальный SMTP, внешних вызовов нет.
+    """
+    import smtplib
+    from email.message import EmailMessage
+    from email.utils import formatdate
+
+    msg = EmailMessage()
+    msg["From"] = from_addr
+    msg["To"] = to_addr
+    msg["Subject"] = subject
+    msg["Date"] = formatdate(localtime=True)
+    msg.set_content(text)
+
+    try:
+        with smtplib.SMTP(host, port, timeout=10) as smtp:
+            smtp.send_message(msg)
+        return True
+    except Exception as exc:  # noqa: BLE001
+        print(f"  SMTP ошибка: {exc}", file=sys.stderr)
+        return False
+
+
 def send_telegram(token: str, chat_id: str, text: str) -> bool:
     """Отправка через Telegram Bot API. Возвращает успех."""
     if httpx is None:
@@ -100,10 +198,16 @@ def send_telegram(token: str, chat_id: str, text: str) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser(description="Отправка алертов владельцам")
     ap.add_argument("--dsn", required=True)
-    ap.add_argument("--token", default="", help="Telegram bot token")
-    ap.add_argument("--chat-id", default="", help="chat_id получателя")
+    # SMTP — ДЕФОЛТ. Опора: регламенты заказчика предписывают почту
+    # (Проектная ДИБ п. 1.3, 2.1, 3.1, 7.3.1; ДБРЦТ п. 7.1).
+    ap.add_argument("--smtp-host", default="127.0.0.1")
+    ap.add_argument("--smtp-port", type=int, default=1025)
+    ap.add_argument("--email-to", default="", help="адрес получателя")
     ap.add_argument("--dry-run", action="store_true",
                     help="не отправлять, только пометить sent и напечатать")
+    # Telegram — fallback, включается только явно.
+    ap.add_argument("--token", default="", help="Telegram bot token (fallback)")
+    ap.add_argument("--chat-id", default="", help="chat_id получателя")
     ap.add_argument("--limit", type=int, default=10)
     args = ap.parse_args()
 
@@ -120,25 +224,76 @@ def main() -> int:
         """, (args.limit,))
         rows = cur.fetchall()
 
-        if not rows:
-            print("нет алертов со статусом pending")
-            cur.close()
-            return 0
-
         print(f"алертов к отправке: {len(rows)}")
-        sent = failed = 0
 
+        # Запросы в службу качества отправляются почтой: это прямой
+        # канал «вопрос -> владелец» (п. 3 брифинга).
+        cur.execute("""
+            SELECT public_id, question, closest_chunks, confidence, coverage
+            FROM quality_requests
+            WHERE status = 'open'
+            ORDER BY created_at DESC
+            LIMIT %s
+        """, (args.limit,))
+        q_rows = cur.fetchall()
+
+        sent = failed = 0
+        for q in q_rows:
+            public_id, question, closest, conf, cov = q
+            request = {
+                "public_id": public_id, "question": question,
+                "closest_chunks": closest or [],
+            }
+            subject, body = format_email(request, {})
+            print(f"\n--- запрос {public_id} ---")
+            print(subject)
+            print(body[:400])
+
+            ok = False
+            if args.dry_run:
+                ok = True
+            elif args.email_to:
+                ok = send_smtp(args.smtp_host, args.smtp_port,
+                               args.email_to, subject, body)
+            elif args.token:
+                ok = send_telegram(args.token, args.chat_id, body)
+            else:
+                print("  нет ни --email-to, ни --token — пропускаю",
+                      file=sys.stderr)
+
+            if ok and not args.dry_run:
+                cur.execute("""
+                    UPDATE quality_requests SET status = 'answered'
+                    WHERE public_id = %s AND status = 'open'
+                """, (public_id,))
+                # ВНИМАНИЕ: статус 'answered' здесь означает «отправлено
+                # владельцу», а не «получен ответ». Ответ приходит через
+                # /api/quality/answer и переводит в 'answered' повторно.
+                cur.execute("""
+                    UPDATE quality_requests SET status = 'open'
+                    WHERE public_id = %s AND answer IS NULL
+                """, (public_id,))
+            if ok:
+                sent += 1
+            else:
+                failed += 1
+
+        # Сигналы о белых пятнах — тем же путём.
         for alert_id, cluster_id, reason, payload, created_day in rows:
             text = format_alert(payload or {})
             print(f"\n--- алерт #{alert_id} ({reason}, {created_day}) ---")
-            print(text)
+            print(text[:300])
 
             ok = False
-            if args.dry_run or not args.token:
-                # Dry-run: логика проверена, транспорт не задействован.
-                # В демо показывается лента алертов на стенде.
+            if args.dry_run:
                 ok = True
-            else:
+            elif args.email_to:
+                topic = (payload or {}).get("topic", "белое пятно")
+                ok = send_smtp(
+                    args.smtp_host, args.smtp_port, args.email_to,
+                    f"Белое пятно в базе знаний: {topic[:60]}", text,
+                )
+            elif args.token:
                 chat = args.chat_id or (payload or {}).get("owner_chat_id", "")
                 if not chat:
                     print("  нет chat_id — пропускаю", file=sys.stderr)
