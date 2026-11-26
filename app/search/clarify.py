@@ -639,3 +639,29 @@ def resolve_registered_clarification(
             "path": list(path or []),
         }
     return None
+
+def conflict_branch_answer(
+    conflict_id: str, label: str
+) -> dict | None:
+    """Цитата выбранной ветки междокументной развилки.
+
+    Возвращает {result, quote, doc_title, section_path, also} — дословный
+    текст пункта выбранного контура. Нужно, чтобы после ответа на развилку
+    пользователь сразу видел цитату, а не уходил в повторный поиск.
+    """
+    for conflict in _load_conflicts():
+        if conflict.get("id") != conflict_id:
+            continue
+        for opt in conflict.get("options", []):
+            if opt.get("label") != label:
+                continue
+            return {
+                "kind": "answer",
+                "result": opt.get("note") or opt.get("quote", ""),
+                "quote": opt.get("quote", ""),
+                "doc_title": opt.get("doc_title", ""),
+                "section_path": opt.get("section_path", ""),
+                "also": opt.get("also") or [],
+            }
+    return None
+

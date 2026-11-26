@@ -124,6 +124,7 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
     логистикой; иначе используется ans.confidence (сырая).
     """
     tp = fp = tn = fn = 0
+    clar_in = clar_oos = 0
     hits = 0
     n_in = 0
     lats: list[float] = []
@@ -159,6 +160,17 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
                 stale_correct += 1
             continue
 
+        # РАЗВИЛКА — отдельный исход, не отказ (раунд 8.8, п. 5).
+        #
+        # Вопрос «кто назначает РП» получает уточнение: система не отказала,
+        # она спросила, какой контур имеется в виду. Считать это ложным
+        # отказом неверно — поведение правильное по брифу (критерий 2).
+        #
+        # Для Recall развилка на in-scope — не попадание (цитаты ещё нет),
+        # но и не провал: правильный ответ появится после выбора ветки.
+        # Поэтому считаем отдельно и НЕ включаем ни в tp, ни в fn.
+        is_clar = bool(getattr(r["answer"], "clarification", None))
+
         # Тир: ответ с пометкой «низкая уверенность».
         # Для precision он считается ЛОЖНЫМ ответом (мы не уверены),
         # для Recall@3 — попаданием (цитата показана).
@@ -167,18 +179,26 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
         lc = bool(r.get("low_confidence"))
 
         if r["out_of_scope"]:
-            if answered and not lc:
+            # ТРИ исхода на OOS (раунд 8.8, п. 5):
+            #   уточнение — система спросила, а не отказала;
+            #   тир       — показала похожее с пометкой;
+            #   отказ     — верно сказала, что ответа нет.
+            # Смешивать нельзя: уточнение на OOS — это не «ложный ответ»,
+            # но и не «верный отказ»: система ещё не решила.
+            if is_clar:
+                clar_oos += 1
+            elif answered and not lc:
                 fp += 1        # уверенный ответ на вопрос вне базы — плохо
             elif answered and lc:
-                # Тир на out-of-scope: цитата показана с пометкой.
-                # Это НЕ уверенный ответ, поэтому в confident_precision
-                # не входит. Считается отдельно как цена тира.
                 tier_oos += 1
             else:
                 tn += 1        # верный отказ
         else:
             n_in += 1
-            if answered:
+            if is_clar:
+                # Развилка на in-scope: ответа пока нет, но поведение верное.
+                clar_in += 1
+            elif answered:
                 if r["hit"]:
                     tp += 1
                     hits += 1
@@ -207,6 +227,12 @@ def metrics(rows: list[dict], threshold: float, weights: dict[str, float] | None
                               if not r["out_of_scope"] and not r["hit"]),
         "n_in_scope": n_in,
         "n_out_scope": n_out,
+        # Развилки — отдельный исход, не отказ (раунд 8.8, п. 5).
+        # Без этих полей вопрос «кто назначает РП» попадал в ложные отказы,
+        # хотя система не отказала — она спросила, какой контур имеется
+        # в виду. По брифу (критерий 2) это правильное поведение.
+        "clarification_in_scope": clar_in,
+        "clarification_out_of_scope": clar_oos,
         # stale_rate — доля stale-ответов СРЕДИ ВОПРОСОВ ПРО ВЕРСИЮ.
         # Раньше считалось как доля от всех запросов, и при отсутствии
         # stale-вопросов в наборе метрика всегда была 0.000 —

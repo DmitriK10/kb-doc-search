@@ -553,6 +553,28 @@ async def clarify_step(req: ClarifyStep) -> dict:
     return res
 
 
+class ConflictBranch(BaseModel):
+    """Выбор ветки междокументной развилки."""
+
+    conflict_id: str = Field(..., min_length=2, max_length=64)
+    label: str = Field(..., min_length=2, max_length=200)
+
+
+@app.post("/api/conflict/branch")
+async def conflict_branch(req: ConflictBranch) -> dict:
+    """Цитата выбранной ветки: ответ зависит от контура.
+
+    П. 4: после ответа на уточнение пользователь должен видеть цитату
+    выбранной ветки со ссылкой на пункт. Иначе он застревает на развилке.
+    """
+    from app.search.clarify import conflict_branch_answer
+
+    res = conflict_branch_answer(req.conflict_id, req.label)
+    if res is None:
+        raise HTTPException(404, "ветка не найдена")
+    return res
+
+
 @app.get("/api/stats")
 async def stats() -> dict:
     """Состояние индекса и конфигурации — для панели и отладки."""
@@ -791,9 +813,12 @@ function render(d) {
     h += '<div class="meta">' + esc(d.clarification.question) + '</div>';
     h += '<div class="fb" style="flex-wrap:wrap" id="clar">';
     const cid = d.clarification.clarify_id || '';
+    const cfl = d.clarification.conflict_id || '';
     const cpath = JSON.stringify(d.clarification.path || []);
     d.clarification.options.forEach((o, i) => {
       h += '<button data-i="' + i + '" data-cid="' + esc(cid) + '"' +
+           ' data-cfl="' + esc(cfl) + '"' +
+           ' data-label="' + esc(o.label) + '"' +
            ' data-path="' + esc(cpath) + '"' +
            ' style="text-align:left;max-width:100%">' + esc(o.label) + '</button>';
     });
@@ -837,8 +862,42 @@ function bindClarification() {
   document.querySelectorAll('#clar button').forEach(b => {
     b.onclick = async () => {
       const cid = b.dataset.cid || '';
+      const cfl = b.dataset.cfl || '';
       const path = JSON.parse(b.dataset.path || '[]');
       const out = document.getElementById('out');
+      // Междокументная развилка: показываем ЦИТАТУ выбранной ветки.
+      // Без этого пользователь застревал на развилке без ответа.
+      if (cfl) {
+        try {
+          const r = await fetch(api('api/conflict/branch'), {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({conflict_id: cfl, label: b.dataset.label})
+          }).then(x => x.json());
+          if (r.kind === 'answer' || r.quote) {
+            let h = '<div class="card"><div class="badge b-ok">ОТВЕТ ПО РЕГЛАМЕНТУ</div>';
+            if (r.result && r.result !== r.quote) {
+              h += '<div class="q">' + esc(r.result) + '</div>';
+            }
+            h += '<div class="quote">' + esc(r.quote) + '</div>';
+            h += '<div class="src">Источник: ' + esc(r.doc_title) +
+                 ', п. ' + esc(r.section_path) + '</div>';
+            // Трёхуровневая честность: если внутри ветки документы
+            // расходятся, показываем ВТОРУЮ формулировку с источником.
+            (r.also || []).forEach(a => {
+              h += '<div class="quote" style="margin-top:8px">' + esc(a.quote) + '</div>';
+              h += '<div class="src">Также: ' + esc(a.doc_title) +
+                   ', п. ' + esc(a.section_path) + '</div>';
+            });
+            h += '<div class="fb"><button data-v="1">Помогло</button>' +
+                 '<button data-v="-1">Не помогло</button></div>';
+            h += '</div>';
+            out.innerHTML = h;
+            bindFeedbackDirect();
+            return;
+          }
+        } catch (e) { /* падаем в обычный поиск */ }
+      }
       if (cid) {
         // Каскад: спрашиваем следующий шаг у сервера.
         const next = path.concat([parseInt(b.dataset.i, 10)]);
@@ -879,6 +938,22 @@ function bindClarification() {
       const q = document.getElementById('q');
       q.value = q.value.trim() + ' ' + b.dataset.label;
       ask();
+    };
+  });
+}
+
+function bindFeedbackDirect() {
+  document.querySelectorAll('#out .fb button[data-v]').forEach(b => {
+    b.onclick = async () => {
+      try {
+        await fetch(api('api/feedback'), {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({query_hmac: lastHmac || '',
+                                useful: b.dataset.v === '1'})
+        });
+      } catch (e) {}
+      b.parentElement.innerHTML = '<span style="color:var(--dim);font-size:13px">Спасибо, отмечено</span>';
     };
   });
 }

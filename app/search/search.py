@@ -666,10 +666,25 @@ class Searcher:
         cross_doc = None
         registered = detect_registered_conflict(query)
         if registered is not None:
+            # conflict_id нужен клиенту, чтобы после выбора показать
+            # ЦИТАТУ ветки, а не уходить в повторный поиск.
+            # Без этого респондент застревал на развилке.
+            cid = ""
+            try:
+                from app.search.clarify import _load_conflicts
+                norm_q = " ".join(query.lower().replace("ё", "е").split())
+                for _c in _load_conflicts():
+                    if any(" ".join(t.lower().replace("ё", "е").split()) in norm_q
+                           for t in _c.get("triggers", [])):
+                        cid = _c.get("id", "")
+                        break
+            except Exception:
+                pass
             cross_doc = {
                 "question": registered.question,
                 "doc_title": registered.doc_title,
                 "reason": registered.reason,
+                "conflict_id": cid,
                 "options": [
                     {"label": o.label, "section_path": o.section_path,
                      "doc_title": o.doc_title, "score": o.score}
