@@ -707,6 +707,15 @@ INDEX_HTML = """<!DOCTYPE html>
   .fb button { padding:7px 15px; font-size:13px; background:transparent;
         border:1px solid var(--line); color:var(--dim); }
   .fb button:hover { border-color:var(--acc); color:var(--txt); }
+  /* Кнопки развилки: акцентные. Раньше были color:#8b93a3 на фоне
+     #171a21 — контраст 3.2:1, ниже порога читаемости 4.5:1. Пользователь
+     видел текст, но не понимал, что на него можно нажать, и не доходил
+     до цитаты: 5 развилок подряд остались без единого клика. */
+  #clar button { background:var(--card); border:1px solid var(--acc);
+        color:var(--txt); font-size:13.5px; padding:11px 16px; }
+  #clar button:hover { background:var(--acc); color:#fff; }
+  #clar button[data-forkreq] { border-color:var(--dim); color:var(--dim); }
+  #clar button[data-forkreq]:hover { background:var(--line); color:var(--txt); }
   .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
         gap:11px; margin-top:20px; }
   .stat { background:var(--card); border:1px solid var(--line);
