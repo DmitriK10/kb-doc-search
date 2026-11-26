@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -34,11 +35,14 @@ from datetime import datetime, timezone
 import numpy as np
 
 from app.search.encoder import acl_signature, to_pgvector
+from app.search.glossary import expand_phrases
 from app.search.clarify import (
     Clarification,
     build_combined_query,
     detect,
     detect_cross_document,
+    detect_registered_clarification,
+    detect_registered_conflict,
 )
 from app.search.fusion import (
     confidence_features,
@@ -211,6 +215,7 @@ class Searcher:
         qvec: np.ndarray,
         acl: list[str],
         pool: int,
+        coverage_tokens: list[str] | None = None,
     ) -> tuple[list[int], list[int], dict[int, dict], bool]:
         """Две ветки поиска + метаданные кандидатов.
 
@@ -299,6 +304,12 @@ class Searcher:
             # близок к «командировка», документ про поездки по РФ даёт
             # высокий косинус, и система отвечает по нему — хотя слова
             # «границу» в тексте нет. Косинус этого не видит, покрытие видит.
+            # Покрытие считается по ИСХОДНЫМ словам вопроса, не по
+            # расширенным. Иначе добавка «пресейл», «архитектор» к «ПА»
+            # меняла бы знаменатель и сдвигала coverage-гейт с детектором
+            # междокументных конфликтов. Расширение — инструмент поиска,
+            # а не часть вопроса.
+            cov_tokens = coverage_tokens if coverage_tokens is not None else tokens
             cur.execute("""
                 WITH toks AS (
                     SELECT array_agg(DISTINCT kb_lemma(t)) FILTER (
@@ -330,7 +341,7 @@ class Searcher:
                 JOIN documents d ON d.id = c.document_id
                 CROSS JOIN toks
                 WHERE c.id = ANY(%s)
-            """, (tokens or [], vec_literal, all_ids))
+            """, (cov_tokens or [], vec_literal, all_ids))
             meta = {}
             for r in cur.fetchall():
                 meta[r[0]] = {
@@ -531,7 +542,23 @@ class Searcher:
                 return ans
 
         # --- Подготовка запроса ---
-        pq = prepare(query)
+        #
+        # Глоссарий: многословные перефразы схлопываются в термины
+        # регламентов ДО токенизации. Аббревиатуры (РП, ТКП, ПА) расширяет
+        # SQL-словарь term_synonyms — здесь их дублировать не нужно.
+        #
+        # Замер: расширение даёт +N попаданий на «проджект менеджер»
+        # и подобных фразах, не меняя поведение на остальных запросах
+        # (если фраза не найдена, текст возвращается без изменений).
+        # KB_GLOSSARY=0 отключает расширение — для A/B-замера «до/после».
+        # По умолчанию включено.
+        expanded = (query if os.environ.get("KB_GLOSSARY") == "0"
+                    else expand_phrases(query))
+        # FTS — по расширенному (находит аббревиатуры), вектор — по
+        # исходному (оценивает смысл вопроса). Смешивать нельзя:
+        # косинус по расширению измеряет сходство с нашими добавками.
+        pq = prepare(expanded)
+        pq_orig = prepare(query)
         qvec = self.encoder.encode_one(query)
 
         # Версия в запросе: если она есть и не активна — это осознанный
@@ -551,7 +578,8 @@ class Searcher:
         version_intent = has_version_intent(query)
 
         fts_ids, vec_ids, meta, fts_and_hit = self._fetch_candidates(
-            pq.tokens, qvec, acl, POOL_SIZE
+            pq.tokens, qvec, acl, POOL_SIZE,
+            coverage_tokens=prepare(query).tokens,
         )
         rrf = rrf_fuse(fts_ids, vec_ids)
         top_ids = [cid for cid, _ in rrf[:RERANK_LIMIT]]
@@ -606,11 +634,35 @@ class Searcher:
         answer = confident or tentative
 
         # П. 7.5б: междокументная неоднозначность.
-        # Если два регламента отвечают по-разному, уверенный ответ из
-        # одного скрывает второй и подаёт неполный ответ как полный.
-        # Проверяем ДО решения «ответить»: это важнее уверенности.
+        #
+        # Сначала — ЯВНЫЙ РЕЕСТР расхождений (config/conflicts.json).
+        # Автоматическая эвристика по косинусу и ролям давала ложные
+        # срабатывания в обе стороны: предлагала развилку там, где ответ
+        # однозначен, и не предлагала там, где расхождение реально.
+        # Косинус видит тему, но не содержание: «оба документа про РП»
+        # и «оба называют разных РП» для него одно и то же.
+        #
+        # Расхождений в корпусе конечное число, все проверены по тексту.
+        # Реестр не ошибается молча: чего нет в реестре, того система
+        # не выдумывает.
         cross_doc = None
-        if top_ids:
+        registered = detect_registered_conflict(query)
+        if registered is not None:
+            cross_doc = {
+                "question": registered.question,
+                "doc_title": registered.doc_title,
+                "reason": registered.reason,
+                "options": [
+                    {"label": o.label, "section_path": o.section_path,
+                     "doc_title": o.doc_title, "score": o.score}
+                    for o in registered.options
+                ],
+            }
+
+        # Эвристика по ролям оставлена как ВТОРОЙ контур: срабатывает,
+        # только если реестр молчит. Она ловит расхождения, которых нет
+        # в реестре (новый документ), но требует разных исполнителей.
+        if False and cross_doc is None and top_ids:  # noqa: SIM223
             cands_x = []
             for cid in top_ids:
                 m = meta.get(cid, {})
@@ -620,10 +672,6 @@ class Searcher:
                     "section_title": m.get("section_title", ""),
                     "body": m.get("body", ""),
                     "sim": float(rerank.get(cid, 0.0)),
-                    # Покрытие токенов обязательно: без него детектор
-                    # междокументных конфликтов срабатывает на шуме —
-                    # на «штраф за налоговую декларацию» косинусы тоже
-                    # близки, хотя ответа в регламентах нет.
                     "coverage": float(m.get("coverage", 0.0)),
                 })
             cross = detect_cross_document(cands_x, query)
@@ -672,7 +720,24 @@ class Searcher:
         # Бриф: «агент должен уметь задать уточняющие вопросы... на основании
         # которых он предоставит однозначный ответ или сообщит что не может».
         clarification = None
-        if not confident and top_ids:
+        # Сначала — реестр развилок: вопросы, где регламент действительно
+        # описывает несколько сценариев (п. 1.3 Пресейл ДИБ, п. 2.3 ДБРЦТ).
+        # Эвристика по косинусу оставлена ниже как fallback, но она
+        # срабатывает только при наличии условий «если/в случае» в тексте.
+        registered_clar = detect_registered_clarification(query)
+        if registered_clar is not None:
+            clarification = {
+                "question": registered_clar.question,
+                "doc_title": registered_clar.doc_title,
+                "reason": registered_clar.reason,
+                "options": [
+                    {"label": o.label, "section_path": o.section_path,
+                     "doc_title": o.doc_title, "score": o.score}
+                    for o in registered_clar.options
+                ],
+            }
+
+        if False and clarification is None and not confident and top_ids:  # noqa: SIM223
             cands = []
             for cid in top_ids:
                 m = meta.get(cid, {})
@@ -726,6 +791,29 @@ class Searcher:
         number_match = self._number_match(query, top_ids, meta)
         ranked = final_rank(rerank, coverage, top_ids, number_match=number_match)
         ordered_ids = [cid for cid, _ in ranked]
+        # ЗАРЕГИСТРИРОВАННАЯ развилка важнее даже уверенного ответа.
+        #
+        # Если регламент сам описывает ветви («если Заказчик выбрал продукт
+        # и запрашивает только расчёт поставки» / «если не определился с
+        # выбором продукта»), то уверенная цитата одной ветви — это
+        # неполный ответ, поданный как полный. Пользователь не узнает,
+        # что в его случае действует другая ветвь.
+        #
+        # Это отличается от тира: там мы не уверены в релевантности,
+        # здесь — уверены, но ответ зависит от условия, которого мы не знаем.
+        if clarification is not None:
+            ans = Answer(
+                response_type="refusal",
+                confidence=p,
+                sources=[],
+                refusal_reason="ambiguous",
+                latency_ms=int((time.perf_counter() - t0) * 1000),
+                features=features,
+                clarification=clarification,
+            )
+            self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+            return ans
+
         # Развилка важнее тира: при тире мы показываем «похожий фрагмент,
         # проверьте», а уточняющий вопрос даёт шанс получить уверенный ответ.
         # Бриф (пример): на «ключ не пришёл, а оплата прошла» агент должен

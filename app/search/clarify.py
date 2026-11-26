@@ -33,8 +33,12 @@ RAM: 0 (использует уже найденные чанки). Стоимо
 
 from __future__ import annotations
 
+import json
 import re
+from pathlib import Path
 from dataclasses import dataclass, field
+
+from app.search.actors import actors_differ
 
 # Пороги детектора. Обоснованы структурой, а не подгонкой:
 #   MIN_MARGIN — если разрыв косинусов больше, ответ уже однозначен,
@@ -203,6 +207,25 @@ def detect(
     if margin < min_margin:
         return None
 
+    # ВАЖНО: развилка — это РАЗНЫЕ СЦЕНАРИИ, а не просто близкие пункты.
+    #
+    # Ложное срабатывание: «за сколько ПА обязан принять заявку» давало
+    # варианты «Сбор информации», «Сбор информации (п. 6.7)», «заявка,
+    # находящаяся в статусе...» — три соседних раздела, ни один не
+    # является сценарием. Пользователь не может выбрать: это не выбор,
+    # а список глав.
+    #
+    # Признак настоящей развилки: у каждого варианта в тексте есть
+    # УСЛОВИЕ («если», «в случае», «при наличии»). Именно так в
+    # регламентах описаны ветви: «Если Заказчик выбрал продукт...».
+    # Если условий нет — это не развилка, и уточнять нечего.
+    distinct = [
+        c for c in distinct
+        if _extract_conditions(c.get("body") or "")
+    ]
+    if len(distinct) < MIN_OPTIONS:
+        return None
+
     options: list[ClarificationOption] = []
     for c in distinct:
         # Подпись варианта: ищем ПЕРВОЕ годное условие, а не первое попавшееся.
@@ -226,6 +249,27 @@ def detect(
             doc_title=c["doc_title"],
             score=round(float(c["sim"]), 4),
         ))
+
+    # Дедупликация меток: две кнопки с одинаковым текстом неразличимы.
+    # Разные пункты одного раздела дают одинаковый section_title, поэтому
+    # при совпадении добавляем номер пункта — он всегда разный.
+    seen_labels: dict[str, int] = {}
+    deduped: list[ClarificationOption] = []
+    for o in options:
+        if o.label in seen_labels:
+            seen_labels[o.label] += 1
+            suffix = f" (п. {o.section_path})" if o.section_path else ""
+            o = ClarificationOption(
+                label=o.label + suffix,
+                section_path=o.section_path,
+                doc_title=o.doc_title,
+                score=o.score,
+            )
+        else:
+            seen_labels[o.label] = 1
+        if o.label not in {x.label for x in deduped}:
+            deduped.append(o)
+    options = deduped
 
     # Отбрасываем варианты, нерелевантные самому вопросу.
     #
@@ -283,7 +327,18 @@ def build_combined_query(original: str, option: ClarificationOption) -> str:
 # сценария), здесь — МЕЖДУ документами (выбор этапа или контура).
 # ---------------------------------------------------------------------------
 
-MIN_CROSS_DOC_SIM = 0.62
+MIN_CROSS_DOC_SIM = 0.45
+
+# Ключевые роли-исполнители для проверки согласия документов.
+# Если два документа называют ОДНУ И ТУ ЖЕ ключевую роль, они
+# согласны по существу, и развилка была бы навязанной. Своя уникальная
+# роль у каждого — признак того, что ответ зависит от контура.
+KEY_ROLES = {
+    "РП", "ПА", "SS", "АМ", "TPS", "TSS", "ГИП", "АП", "РМ",
+    "координатор департамента",
+    "руководитель отдела УП", "руководитель группы УП",
+    "руководитель департамента",
+}
 
 # Второе условие: пункт должен реально содержать слова вопроса.
 # Без него детектор срабатывал на шуме: на «штраф за налоговую
@@ -330,11 +385,31 @@ def detect_cross_document(
     if len(picked) < 2:
         return None
 
-    # Большой разрыв означает, что ответ однозначен: второй документ
-    # просто близок по теме, а не противоречит первому.
-    margin = picked[0]["sim"] - picked[-1]["sim"]
-    if margin > max_margin:
+    # ГЛАВНОЕ УСЛОВИЕ: документы должны называть РАЗНЫХ ИСПОЛНИТЕЛЕЙ.
+    #
+    # Косинус не различает «дополняют друг друга» и «называют разных
+    # людей»: в обоих случаях он видит одну тему и близкие значения.
+    # На «кто согласует ТКП» два документа называют одного и того же ПА —
+    # развилка там была бы навязанной. На «кто назначает РП» один документ
+    # называет Руководителя отдела УП, другой — Координатора департамента,
+    # и показать только один значит подать неполный ответ как полный.
+    #
+    # Сравнение ролей детерминировано (app/search/actors.py): никакой
+    # модели, только разбор текста пунктов.
+    differ, roles = actors_differ(picked)
+    if not differ:
         return None
+
+    # Уточнение: если документы СХОДЯТСЯ хотя бы на одной ключевой роли,
+    # они согласны по существу. «Кто согласует ТКП» — оба называют ПА,
+    # значит ответ один. «Кто назначает РП» — один называет Руководителя
+    # отдела УП, другой Координатора, общей роли нет, развилка нужна.
+    key_sets = [set(r) & KEY_ROLES for r in roles.values()]
+    key_sets = [k for k in key_sets if k]
+    if len(key_sets) >= 2 and set.intersection(*key_sets):
+        return None
+
+    margin = picked[0]["sim"] - picked[-1]["sim"]
 
     options: list[ClarificationOption] = []
     for c in picked:
@@ -377,3 +452,128 @@ def short_doc_name(title: str) -> str:
         if title.startswith(key) or key.startswith(title):
             return short
     return title[:30]
+
+# ---------------------------------------------------------------------------
+# Явный реестр междокументных расхождений (config/conflicts.json).
+#
+# ПОЧЕМУ ЯВНЫЙ РЕЕСТР, А НЕ ЭВРИСТИКА. Автоматическое определение по
+# косинусу и ролям дало ложные срабатывания в обе стороны: предлагало
+# развилку на «кто согласует ТКП» (ответ однозначен) и не предлагало
+# на «кто назначает РП» (расхождение реально). Косинус видит ТЕМУ,
+# но не СОДЕРЖАНИЕ ответа.
+#
+# Междокументных расхождений в корпусе конечное число, и все они
+# проверены по тексту. Реестр детерминирован, объясним и не ошибается
+# молча: если расхождения нет в реестре, система не придумывает его.
+# ---------------------------------------------------------------------------
+
+_CONFLICT_CACHE: dict | None = None
+_CONFLICT_PATH = Path(__file__).resolve().parents[2] / "config" / "conflicts.json"
+
+
+def _load_conflicts() -> list[dict]:
+    """Реестр расхождений из config/conflicts.json."""
+    global _CONFLICT_CACHE
+    if _CONFLICT_CACHE is None:
+        try:
+            _CONFLICT_CACHE = json.loads(
+                _CONFLICT_PATH.read_text(encoding="utf-8")
+            )
+        except Exception:
+            _CONFLICT_CACHE = {}
+    return _CONFLICT_CACHE.get("conflicts", [])
+
+
+def detect_registered_conflict(query: str) -> Clarification | None:
+    """Расхождение из реестра, если вопрос про него.
+
+    Триггеры сравниваются по вхождению в нормализованный запрос.
+    Кнопки — СЕМАНТИЧЕСКИЕ («На этапе пресейла», «В проекте»),
+    а не имена документов: для пользователя это выбор сценария,
+    а не выбор регламента. Источник показывается внутри ветки.
+    """
+    norm = " ".join(query.lower().replace("ё", "е").split())
+    for conflict in _load_conflicts():
+        for trig in conflict.get("triggers", []):
+            t = " ".join(trig.lower().replace("ё", "е").split())
+            if t and t in norm:
+                options = [
+                    ClarificationOption(
+                        label=o["label"],
+                        section_path=o["section_path"],
+                        doc_title=o["doc_title"],
+                        score=1.0,
+                    )
+                    for o in conflict.get("options", [])
+                ]
+                return Clarification(
+                    question=conflict["question"],
+                    options=options,
+                    doc_title=conflict.get("title", ""),
+                    reason="известное расхождение регламентов",
+                )
+    return None
+
+# ---------------------------------------------------------------------------
+# Реестр развилок кейса 2 (config/clarifications.json).
+#
+# ПОЧЕМУ ЯВНЫЙ РЕЕСТР. Пороговая эвристика (разные section_path одного
+# документа + близкие косинусы) давала ложные срабатывания: на «за сколько
+# ПА обязан принять заявку» предлагала «Сбор информации», «Сбор информации
+# (п. 6.7)» и «заявка в статусе Жду доп. инфо» — три соседние главы, ни одна
+# не является сценарием. Выбирать между главами пользователь не может.
+#
+# Косинус видит близость темы, но не наличие ВЕТВЛЕНИЯ в тексте.
+# Развилок в корпусе конечное число; все проверены дословно.
+# ---------------------------------------------------------------------------
+
+_CLAR_CACHE: dict | None = None
+_CLAR_PATH = Path(__file__).resolve().parents[2] / "config" / "clarifications.json"
+
+
+def _load_clarifications() -> list[dict]:
+    """Реестр развилок из config/clarifications.json."""
+    global _CLAR_CACHE
+    if _CLAR_CACHE is None:
+        try:
+            _CLAR_CACHE = json.loads(
+                _CLAR_PATH.read_text(encoding="utf-8")
+            )
+        except Exception:
+            _CLAR_CACHE = {}
+    return _CLAR_CACHE.get("clarifications", [])
+
+
+def detect_registered_clarification(query: str) -> Clarification | None:
+    """Развилка из реестра, если вопрос про неё.
+
+    Возвращает первый шаг. Варианты — формулировки из регламента,
+    а не придуманные: пользователь видит язык своего же документа.
+    """
+    norm = " ".join(query.lower().replace("ё", "е").split())
+    for item in _load_clarifications():
+        if item.get("internal"):
+            continue
+        for trig in item.get("triggers", []):
+            t = " ".join(trig.lower().replace("ё", "е").split())
+            if t and t in norm:
+                steps = item.get("steps") or []
+                if not steps:
+                    continue
+                step = steps[0]
+                options = [
+                    ClarificationOption(
+                        label=o["label"],
+                        section_path=o.get("next", ""),
+                        doc_title=item.get("title", ""),
+                        score=1.0,
+                    )
+                    for o in step.get("options", [])
+                ]
+                return Clarification(
+                    question=step["question"],
+                    options=options,
+                    doc_title=item.get("title", ""),
+                    reason="развилка из регламента: " + step.get("source", ""),
+                )
+    return None
