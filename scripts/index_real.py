@@ -222,6 +222,11 @@ def chunk_blocks(title: str, blocks: list[dict],
         if buf_len + len(text) + 1 > max_chars and buf:
             flush()
 
+        # Путь чанка — путь ПЕРВОГО пункта, а не раздела.
+        # Без этого цитата из п. 2.1 подписывалась «п. 2».
+        if not buf and b["kind"] == "item" and b["section_path"]:
+            cur_section = b["section_path"]
+
         # Пункт с номером сохраняем с номером: это основание цитаты.
         if b["kind"] == "item" and _ITEM.match(text) is None:
             label = b["section_path"]
