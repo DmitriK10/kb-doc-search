@@ -730,6 +730,9 @@ class Searcher:
                 "question": registered_clar.question,
                 "doc_title": registered_clar.doc_title,
                 "reason": registered_clar.reason,
+                # Каскад: клиент по этим полям запросит следующий шаг.
+                "clarify_id": registered_clar.clarify_id,
+                "path": registered_clar.path,
                 "options": [
                     {"label": o.label, "section_path": o.section_path,
                      "doc_title": o.doc_title, "score": o.score}

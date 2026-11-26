@@ -92,6 +92,10 @@ class Clarification:
     options: list[ClarificationOption] = field(default_factory=list)
     doc_title: str = ""
     reason: str = ""
+    # Каскад: id записи реестра и путь выборов. Нужны, чтобы клиент
+    # мог запросить следующий шаг у /api/clarify/step.
+    clarify_id: str = ""
+    path: list[int] = field(default_factory=list)
 
 
 _BAD_START = re.compile(
@@ -575,5 +579,63 @@ def detect_registered_clarification(query: str) -> Clarification | None:
                     options=options,
                     doc_title=item.get("title", ""),
                     reason="развилка из регламента: " + step.get("source", ""),
+                    clarify_id=item.get("id", ""),
+                    path=[],
                 )
+    return None
+
+def resolve_registered_clarification(
+    item_id: str, path: list[int]
+) -> dict | None:
+    """Разрешает каскад уточнений по выбранным вариантам.
+
+    path — индексы выбранных вариантов на каждом шаге: [0] значит
+    «выбрал первый вариант первого шага».
+
+    Возвращает один из двух словарей:
+      {'kind': 'step',    'question', 'options', 'source', 'step'}
+      {'kind': 'answer',  'result', 'quote', 'doc_title', 'section_path'}
+
+    Каскад нужен потому, что п. 1.3 Пресейл ДИБ устроен именно так:
+    сначала «выбрал продукт или нет», затем «обозначил ли, что услуги
+    не нужны», затем «≤30% или >30%». Один плоский вопрос здесь соврал бы.
+    """
+    for item in _load_clarifications():
+        if item.get("id") != item_id:
+            continue
+        steps = item.get("steps") or []
+        if not steps:
+            return None
+
+        step_idx = 0
+        for choice in path or []:
+            step = steps[step_idx]
+            opts = step.get("options") or []
+            if not (0 <= choice < len(opts)):
+                return None
+            chosen = opts[choice]
+            if "next" in chosen:
+                step_idx = int(chosen["next"])
+                if step_idx >= len(steps):
+                    return None
+                continue
+            # Дошли до результата: каскад завершён.
+            return {
+                "kind": "answer",
+                "result": chosen.get("result", ""),
+                "quote": chosen.get("quote", ""),
+                "doc_title": chosen.get("doc_title", item.get("title", "")),
+                "section_path": chosen.get("section_path", ""),
+            }
+
+        step = steps[step_idx]
+        return {
+            "kind": "step",
+            "step": step_idx,
+            "question": step["question"],
+            "source": step.get("source", ""),
+            "options": [o["label"] for o in step.get("options", [])],
+            "clarify_id": item_id,
+            "path": list(path or []),
+        }
     return None

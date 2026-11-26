@@ -527,6 +527,32 @@ async def alerts(limit: int = 8) -> dict:
         raise HTTPException(500, str(exc)[:200]) from exc
 
 
+class ClarifyStep(BaseModel):
+    """Один шаг каскада уточнений."""
+
+    clarify_id: str = Field(..., min_length=2, max_length=64)
+    path: list[int] = Field(default_factory=list)
+
+
+@app.post("/api/clarify/step")
+async def clarify_step(req: ClarifyStep) -> dict:
+    """Следующий шаг каскада или готовый ответ из регламента.
+
+    Каскад нужен, потому что п. 1.3 Пресейл ДИБ реально трёхуровневый:
+    сначала «выбрал продукт или нет», затем «обозначил ли, что услуги
+    не нужны», затем «≤30% или >30%». Один плоский вопрос соврал бы.
+
+    Ответ берётся ДОСЛОВНО из пункта регламента с указанием источника:
+    пользователь видит текст своего же документа, а не пересказ.
+    """
+    from app.search.clarify import resolve_registered_clarification
+
+    res = resolve_registered_clarification(req.clarify_id, req.path)
+    if res is None:
+        raise HTTPException(404, "уточнение не найдено")
+    return res
+
+
 @app.get("/api/stats")
 async def stats() -> dict:
     """Состояние индекса и конфигурации — для панели и отладки."""
@@ -764,8 +790,11 @@ function render(d) {
     // КЕЙС 2: развилка. Варианты — из текста регламента, не придуманные.
     h += '<div class="meta">' + esc(d.clarification.question) + '</div>';
     h += '<div class="fb" style="flex-wrap:wrap" id="clar">';
+    const cid = d.clarification.clarify_id || '';
+    const cpath = JSON.stringify(d.clarification.path || []);
     d.clarification.options.forEach((o, i) => {
-      h += '<button data-i="' + i + '" data-label="' + esc(o.label) + '"' +
+      h += '<button data-i="' + i + '" data-cid="' + esc(cid) + '"' +
+           ' data-path="' + esc(cpath) + '"' +
            ' style="text-align:left;max-width:100%">' + esc(o.label) + '</button>';
     });
     h += '</div>';
@@ -806,11 +835,48 @@ function render(d) {
 
 function bindClarification() {
   document.querySelectorAll('#clar button').forEach(b => {
-    b.onclick = () => {
+    b.onclick = async () => {
+      const cid = b.dataset.cid || '';
+      const path = JSON.parse(b.dataset.path || '[]');
+      const out = document.getElementById('out');
+      if (cid) {
+        // Каскад: спрашиваем следующий шаг у сервера.
+        const next = path.concat([parseInt(b.dataset.i, 10)]);
+        try {
+          const r = await fetch(api('api/clarify/step'), {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({clarify_id: cid, path: next})
+          }).then(x => x.json());
+          if (r.kind === 'step') {
+            // Следующий вопрос каскада — тот же экран, следующий шаг.
+            let h = '<div class="card"><div class="badge b-warn">УТОЧНЕНИЕ</div>';
+            h += '<div class="meta">' + esc(r.question) + '</div>';
+            h += '<div class="fb" style="flex-wrap:wrap" id="clar">';
+            r.options.forEach((label, i) => {
+              h += '<button data-i="' + i + '" data-cid="' + esc(r.clarify_id) + '"' +
+                   ' data-path="' + esc(JSON.stringify(next)) + '"' +
+                   ' style="text-align:left;max-width:100%">' + esc(label) + '</button>';
+            });
+            h += '</div><div class="src">Основание: ' + esc(r.source) + '</div></div>';
+            out.innerHTML = h;
+            bindClarification();
+            return;
+          }
+          if (r.kind === 'answer') {
+            // Готовый ответ ДОСЛОВНО из регламента, с источником.
+            let h = '<div class="card"><div class="badge b-ok">ОТВЕТ ПО РЕГЛАМЕНТУ</div>';
+            h += '<div class="q">' + esc(r.result) + '</div>';
+            h += '<div class="quote">' + esc(r.quote) + '</div>';
+            h += '<div class="src">Источник: ' + esc(r.doc_title) +
+                 ', п. ' + esc(r.section_path) + '</div></div>';
+            out.innerHTML = h;
+            return;
+          }
+        } catch (e) { /* падаем в обычный поиск */ }
+      }
+      // Фолбэк: комбинированный запрос обычным путём.
       const q = document.getElementById('q');
-      // Комбинированный запрос: исходный вопрос + выбранный вариант.
-      // Дальше идёт обычный поиск через coverage-гейт — отдельной
-      // логики не нужно (требование брифа).
       q.value = q.value.trim() + ' ' + b.dataset.label;
       ask();
     };
