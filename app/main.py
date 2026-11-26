@@ -250,6 +250,178 @@ async def metrics(days: int = 30) -> dict:
         raise HTTPException(500, str(exc)[:200]) from exc
 
 
+class QualityAnswer(BaseModel):
+    """Ответ сотрудника службы качества на запрос пользователя."""
+
+    request_public_id: str = Field(..., min_length=2, max_length=20)
+    answer: str = Field(..., min_length=10, max_length=4000)
+    answered_by: str = Field(default="", max_length=120)
+    doc_key: str = Field(default="", max_length=64)
+    section_path: str = Field(default="", max_length=32)
+
+
+@app.get("/api/quality/requests")
+async def quality_requests(limit: int = 20) -> dict:
+    """Список запросов в службу качества для админ-страницы."""
+    try:
+        import psycopg
+        with psycopg.connect(_dsn(), autocommit=True) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT public_id, created_at, question, status, moderation,
+                       answer, answered_by, doc_key, section_path, chunk_id,
+                       confidence, coverage
+                FROM quality_requests
+                ORDER BY created_at DESC
+                LIMIT %s
+            """, (limit,))
+            rows = cur.fetchall()
+            cur.execute("""
+                SELECT status, count(*) FROM quality_requests GROUP BY status
+            """)
+            counts = dict(cur.fetchall())
+            cur.close()
+        return {
+            "counts": counts,
+            "requests": [{
+                "public_id": r[0],
+                "created_at": r[1].isoformat(),
+                "question": r[2],
+                "status": r[3],
+                "moderation": r[4],
+                "answer": r[5],
+                "answered_by": r[6],
+                "doc_key": r[7],
+                "section_path": r[8],
+                "chunk_id": r[9],
+                "confidence": r[10],
+                "coverage": r[11],
+            } for r in rows],
+        }
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(500, str(exc)[:200]) from exc
+
+
+@app.post("/api/quality/answer")
+async def quality_answer(req: QualityAnswer) -> dict:
+    """Сотрудник службы качества отвечает на запрос.
+
+    Ответ сохраняется в quality_requests и ждёт модерации. В поиск он
+    попадёт только после approve — иначе недостоверный ответ нарушил бы
+    гарантию, на которой держится весь продукт.
+    """
+    try:
+        import psycopg
+        from app.search.encoder import Encoder, to_pgvector
+        with psycopg.connect(_dsn(), autocommit=False) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                UPDATE quality_requests
+                SET answer = %s, answered_by = %s, answered_at = now(),
+                    doc_key = NULLIF(%s, ''), section_path = NULLIF(%s, ''),
+                    status = 'answered', moderation = 'pending'
+                WHERE public_id = %s
+                RETURNING id
+            """, (req.answer, req.answered_by, req.doc_key,
+                  req.section_path, req.request_public_id))
+            row = cur.fetchone()
+            conn.commit()
+            cur.close()
+        if not row:
+            raise HTTPException(404, f"запрос {req.request_public_id} не найден")
+        return {"ok": True, "request_db_id": row[0],
+                "moderation": "pending",
+                "note": "ответ попадёт в поиск после проверки"}
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(500, str(exc)[:200]) from exc
+
+
+class ModerationRequest(BaseModel):
+    """Модерация ответа службы качества."""
+
+    public_id: str = Field(..., min_length=2, max_length=20)
+    approve: bool = True
+    moderated_by: str = Field(default="", max_length=120)
+
+
+@app.post("/api/quality/moderate")
+async def quality_moderate(req: ModerationRequest) -> dict:
+    """Модерация: одобренный ответ становится источником в поиске.
+
+    Создаётся запись в quality_knowledge с эмбеддингом и привязкой
+    к регламенту (бриф: «привязывает его к регламенту»). После этого
+    повторный вопрос находит её как обычный источник.
+    """
+    try:
+        import psycopg
+        from app.search.encoder import to_pgvector
+        enc: Encoder = _state["encoder"]
+        with psycopg.connect(_dsn(), autocommit=False) as conn:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT id, question, answer, doc_key, section_path
+                FROM quality_requests
+                WHERE public_id = %s AND answer IS NOT NULL
+            """, (req.public_id,))
+            r = cur.fetchone()
+            if not r:
+                raise HTTPException(404, "запрос не найден или ответа ещё нет")
+            req_id, question, answer, doc_key, section_path = r
+
+            if not req.approve:
+                cur.execute("""
+                    UPDATE quality_requests
+                    SET moderation = 'rejected', moderated_by = %s,
+                        moderated_at = now(), status = 'closed'
+                    WHERE id = %s
+                """, (req.moderated_by, req_id))
+                conn.commit()
+                cur.close()
+                return {"ok": True, "moderation": "rejected"}
+
+            # Документ, к которому привязываем: указанный сотрудником или
+            # тот, что нашёлся при отказе (из closest_chunks).
+            doc_title = None
+            if doc_key:
+                cur.execute(
+                    "SELECT title FROM documents WHERE doc_key = %s LIMIT 1",
+                    (doc_key,),
+                )
+                row = cur.fetchone()
+                if row:
+                    doc_title = row[0]
+
+            vec = enc.encode_one(f"{question} {answer}")
+            cur.execute("""
+                INSERT INTO quality_knowledge
+                    (request_id, body, doc_key, section_path, doc_title,
+                     embedding, is_active)
+                VALUES (%s, %s, NULLIF(%s,''), NULLIF(%s,''), %s,
+                        %s::halfvec, TRUE)
+                RETURNING id
+            """, (req_id, answer, doc_key, section_path, doc_title,
+                  to_pgvector(vec)))
+            knowledge_id = cur.fetchone()[0]
+
+            cur.execute("""
+                UPDATE quality_requests
+                SET moderation = 'approved', moderated_by = %s,
+                    moderated_at = now(), status = 'closed'
+                WHERE id = %s
+            """, (req.moderated_by, req_id))
+            conn.commit()
+            cur.close()
+        return {"ok": True, "moderation": "approved",
+                "knowledge_id": knowledge_id,
+                "note": "ответ добавлен в базу знаний и участвует в поиске"}
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(500, str(exc)[:200]) from exc
+
+
 @app.get("/api/clusters")
 async def clusters() -> dict:
     """Белые пятна: зоны, метки из онтологии, владельцы.
@@ -535,6 +707,7 @@ async function ask() {
     lastHmac = d.query_hmac;
     out.innerHTML = render(d);
     bindFeedback();
+    bindClarification();
   } catch (e) {
     out.innerHTML = '<div class="card"><span class="badge b-bad">ОШИБКА</span> ' +
                     esc(e.message) + '</div>';
@@ -587,6 +760,18 @@ function render(d) {
          '<span class="src" style="margin:0">Помогло?</span>' +
          '<button data-v="1">Полезно</button>' +
          '<button data-v="0">Бесполезно</button></div>';
+  } else if (d.clarification) {
+    // КЕЙС 2: развилка. Варианты — из текста регламента, не придуманные.
+    h += '<div class="meta">' + esc(d.clarification.question) + '</div>';
+    h += '<div class="fb" style="flex-wrap:wrap" id="clar">';
+    d.clarification.options.forEach((o, i) => {
+      h += '<button data-i="' + i + '" data-label="' + esc(o.label) + '"' +
+           ' style="text-align:left;max-width:100%">' + esc(o.label) + '</button>';
+    });
+    h += '</div>';
+    h += '<div class="src" style="margin-top:10px">Основание: ' +
+         esc(d.clarification.doc_title) + ' · ' +
+         esc(d.clarification.reason) + '</div>';
   } else {
     h += '<div class="meta">В текущих регламентах нет прямого ответа на вопрос.</div>' +
          '<blockquote>Возможные причины: регламент устарел или случай не описан.\\n' +
@@ -596,7 +781,14 @@ function render(d) {
          (d.owner_contact ? ' (' + esc(d.owner_contact) + ')' : '') +
          '\\nили создать заявку на обновление базы знаний.</blockquote>';
     if (d.refusal_reason) {
-      h += '<div class="src">Причина: <code>' + esc(d.refusal_reason) + '</code></div>';
+      if (d.quality_request_id) {
+      h += '<div class="src" style="margin-top:10px">' +
+           'Запрос в службу качества создан: <b>' +
+           esc(d.quality_request_id) + '</b>. ' +
+           'Сотрудник службы качества ответит, и ответ появится в базе знаний.' +
+           '</div>';
+    }
+    h += '<div class="src">Причина: <code>' + esc(d.refusal_reason) + '</code></div>';
     }
   }
 
@@ -610,6 +802,19 @@ function render(d) {
        (d.cache_hit ? ' · из кэша' : '') + '</div>';
   h += '</div>';
   return h;
+}
+
+function bindClarification() {
+  document.querySelectorAll('#clar button').forEach(b => {
+    b.onclick = () => {
+      const q = document.getElementById('q');
+      // Комбинированный запрос: исходный вопрос + выбранный вариант.
+      // Дальше идёт обычный поиск через coverage-гейт — отдельной
+      // логики не нужно (требование брифа).
+      q.value = q.value.trim() + ' ' + b.dataset.label;
+      ask();
+    };
+  });
 }
 
 function bindFeedback() {

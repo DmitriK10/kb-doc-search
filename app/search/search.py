@@ -34,6 +34,7 @@ from datetime import datetime, timezone
 import numpy as np
 
 from app.search.encoder import acl_signature, to_pgvector
+from app.search.clarify import Clarification, build_combined_query, detect
 from app.search.fusion import (
     confidence_features,
     final_rank,
@@ -66,6 +67,16 @@ CACHE_TTL_HOURS = 24
 # Взят 0.35: Recall@3 одинаков на dev и test (0.786 / 0.842), а уверенных
 # ложных ответов на test всего 1 из 21.
 COVERAGE_GATE = 0.35
+
+# Минимальная вероятность для тира.
+#
+# Тир — это «нашёл похожее, но не уверен», а НЕ «ничего не нашёл, покажу
+# соседа». Без нижней границы он выдавался при p=0.37 и показывал
+# случайный пункт регламента на вопрос про налоги и визы: на реальном
+# корпусе такие вопросы стали давать success вместо отказа.
+#
+# Порог 0.45 отделяет «похоже» от «не похоже» по вероятности.
+TIER_MIN_CONFIDENCE = 0.45
 
 
 @dataclass
@@ -123,6 +134,13 @@ class Answer:
     # пересекаются (0.545 против 0.510). Поэтому текст плашки единый
     # и не утверждает ни того, ни другого.
     answer_scope: str = "uncertain"
+    # Кейс 1: номер запроса в службу качества (K-123), если он создан.
+    # Показывается пользователю в отказе: без номера обращение теряется,
+    # и дообучение (кейс 3) невозможно.
+    quality_request_id: str | None = None
+    # Кейс 2: развилка. Заполнено, когда вопрос неоднозначен и нужен
+    # уточняющий вопрос. Варианты берутся из текста регламента.
+    clarification: dict | None = None
 
     def to_dict(self) -> dict:
         return {
@@ -138,6 +156,8 @@ class Answer:
             "stale_warning": self.stale_warning,
             "low_confidence": self.low_confidence,
             "answer_scope": self.answer_scope,
+            "quality_request_id": self.quality_request_id,
+            "clarification": self.clarification,
         }
 
 
@@ -358,6 +378,54 @@ class Searcher:
         quote_input = [(r[0], r[2], r[3]) for r in rows]
         return rerank_input, quote_input
 
+    def _fetch_quality_knowledge(
+        self, qvec: np.ndarray, query: str, limit: int = 3
+    ) -> list[dict]:
+        """Ответы службы качества как отдельный источник.
+
+        Бриф: «агент пополняет свою базу знаний нужной информацией
+        и привязывает его к регламенту». Значит ответ должен находиться
+        наравне с пунктами регламента.
+
+        Почему отдельный запрос, а не добавление в общий поиск: ответ
+        службы качества — не пункт регламента, и показывать его как
+        «пункт 4.2» подменило бы источник. Он идёт с меткой
+        «дополнено службой качества».
+        """
+        vec_literal = to_pgvector(qvec)
+        conn = self._psycopg.connect(self.dsn, autocommit=False)
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT qk.id, qk.body, qk.doc_title, qk.section_path,
+                       qk.doc_key, qr.question,
+                       1 - (qk.embedding <=> %s::halfvec(312)) AS sim
+                FROM quality_knowledge qk
+                JOIN quality_requests qr ON qr.id = qk.request_id
+                WHERE qk.is_active
+                ORDER BY qk.embedding <=> %s::halfvec(312)
+                LIMIT %s
+            """, (vec_literal, vec_literal, limit))
+            rows = cur.fetchall()
+            cur.close()
+        finally:
+            conn.close()
+
+        out = []
+        for r in rows:
+            sim = float(r[6] or 0.0)
+            # Порог: ответ службы качества подставляем только когда он
+            # действительно про этот вопрос. Иначе он будет всплывать
+            # на всё подряд, потому что добавлен недавно.
+            if sim < self.threshold:
+                continue
+            out.append({
+                "id": r[0], "body": r[1], "doc_title": r[2],
+                "section_path": r[3], "doc_key": r[4],
+                "question": r[5], "sim": sim,
+            })
+        return out
+
     def _fetch_stale(
         self, qvec: np.ndarray, tokens: list[str], acl: list[str]
     ) -> list[dict]:
@@ -520,13 +588,78 @@ class Searcher:
         # Отказывать в таком случае — терять сотрудника, который ушёл бы
         # искать вручную. Показать с пометкой честнее и полезнее.
         confident = p >= self.threshold and bool(top_ids) and coverage_ok
+        # Тир — это «нашёл похожее, но не уверен», а НЕ «ничего не нашёл,
+        # но покажу соседа». Дефект: без нижней границы тир выдавался при
+        # p=0.37 и показывал случайный пункт регламента на вопрос про налоги.
+        # Порог 0.45 отделяет «похоже» от «не похоже» по вероятности.
         tentative = (
-            p >= self.threshold
+            p >= max(self.threshold, TIER_MIN_CONFIDENCE)
             and bool(top_ids)
             and not coverage_ok
             and top_coverage > 0.0
         )
         answer = confident or tentative
+
+        # КЕЙС 3: проверяем, есть ли одобренный ответ службы качества.
+        # Он приоритетнее обычного поиска: это ответ человека на такой же
+        # вопрос. Замыкание цикла: отказ -> ответ службы -> повторный
+        # вопрос находит готовую цитату.
+        quality_hits = self._fetch_quality_knowledge(qvec, query)
+        if quality_hits and not answer:
+            q_hit = quality_hits[0]
+            ans = Answer(
+                response_type="success",
+                confidence=min(0.99, q_hit["sim"]),
+                sources=[Source(
+                    chunk_id=q_hit["id"],
+                    doc_title=(q_hit["doc_title"] or
+                               f"Ответ службы качества ({q_hit['question'][:40]})"),
+                    version="дополнено службой качества",
+                    section_path=q_hit["section_path"] or "—",
+                    section_title="Дополнение службы качества",
+                    source_path=f"quality:{q_hit['id']}",
+                    quote=q_hit["body"],
+                    is_active=True,
+                )],
+                latency_ms=int((time.perf_counter() - t0) * 1000),
+                features=features,
+            )
+            self._cache_put(qhmac, acl_sig, ans)
+            self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+            return ans
+
+        # КЕЙС 2: если уверенного ответа нет, проверяем развилку.
+        # Уточнение только когда ответ невозможен — иначе оно навязчиво.
+        # Бриф: «агент должен уметь задать уточняющие вопросы... на основании
+        # которых он предоставит однозначный ответ или сообщит что не может».
+        clarification = None
+        if not confident and top_ids:
+            cands = []
+            for cid in top_ids:
+                m = meta.get(cid, {})
+                cands.append({
+                    "doc_title": m.get("doc_title", ""),
+                    "section_path": m.get("section_path", ""),
+                    "section_title": m.get("section_title", ""),
+                    "body": m.get("body", ""),
+                    "sim": float(rerank.get(cid, 0.0)),
+                })
+            clar = detect(cands, query)
+            if clar is not None:
+                clarification = {
+                    "question": clar.question,
+                    "doc_title": clar.doc_title,
+                    "reason": clar.reason,
+                    "options": [
+                        {
+                            "label": o.label,
+                            "section_path": o.section_path,
+                            "doc_title": o.doc_title,
+                            "score": o.score,
+                        }
+                        for o in clar.options
+                    ],
+                }
         if tentative:
             features["blocked_by_coverage"] = top_coverage
 
@@ -543,6 +676,7 @@ class Searcher:
             return self._refuse(
                 query, qvec, pq.tokens, acl, qhmac, acl_sig, user_id,
                 p, features, latency, explicit_stale, version_intent,
+                top_ids, meta, clarification,
             )
 
         # Порядок показа — по final_rank (косинус + покрытие + числа),
@@ -553,11 +687,29 @@ class Searcher:
         number_match = self._number_match(query, top_ids, meta)
         ranked = final_rank(rerank, coverage, top_ids, number_match=number_match)
         ordered_ids = [cid for cid, _ in ranked]
+        # Развилка важнее тира: при тире мы показываем «похожий фрагмент,
+        # проверьте», а уточняющий вопрос даёт шанс получить уверенный ответ.
+        # Бриф (пример): на «ключ не пришёл, а оплата прошла» агент должен
+        # спросить, какой сценарий имеется в виду, а не выдавать догадку.
+        if tentative and clarification is not None:
+            ans = Answer(
+                response_type="refusal",
+                confidence=p,
+                sources=[],
+                refusal_reason="ambiguous",
+                latency_ms=int((time.perf_counter() - t0) * 1000),
+                features=features,
+                clarification=clarification,
+            )
+            self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+            return ans
+
         best = self._build_sources(ordered_ids, meta, quote_input, qvec, query)
         if not best:
             return self._refuse(
                 query, qvec, pq.tokens, acl, qhmac, acl_sig, user_id,
                 p, features, latency, explicit_stale, version_intent,
+                top_ids, meta, clarification,
             )
 
         ans = Answer(
@@ -787,6 +939,9 @@ class Searcher:
         latency: int,
         explicit_stale: dict | None,
         version_intent: bool = False,
+        top_ids: list[int] | None = None,
+        meta: dict[int, dict] | None = None,
+        clarification: dict | None = None,
     ) -> Answer:
         """Отказ. Пытается дать полезную рекомендацию, а не просто «нет».
 
@@ -822,7 +977,28 @@ class Searcher:
             self._log(ans, qhmac, query, user_id, acl_sig, qvec)
             return ans
 
+        # КЕЙС 2: если найдена развилка, отдаём уточняющий вопрос вместо
+        # отказа. Запрос в службу качества при этом НЕ создаём: пользователь
+        # ещё не исчерпал возможность уточнить.
+        if clarification is not None:
+            ans = Answer(
+                response_type="refusal",
+                confidence=p,
+                sources=[],
+                refusal_reason="ambiguous",
+                latency_ms=latency,
+                features=features,
+                clarification=clarification,
+            )
+            self._log(ans, qhmac, query, user_id, acl_sig, qvec)
+            return ans
+
         owner = self._pick_owner(tokens)
+        # КЕЙС 1: запрос в службу качества. Создаётся при КАЖДОМ отказе —
+        # это и есть механизм «не выдумывать, а спросить у людей».
+        quality_id = self._create_quality_request(
+            query, user_id, features, top_ids or [], meta or {}
+        )
         ans = Answer(
             response_type="refusal",
             confidence=p,
@@ -833,6 +1009,7 @@ class Searcher:
             owner_contact=owner.get("contact") if owner else None,
             latency_ms=latency,
             features=features,
+            quality_request_id=quality_id,
         )
         self._log(ans, qhmac, query, user_id, acl_sig, qvec)
         return ans
@@ -998,6 +1175,57 @@ class Searcher:
                 parts.append(f"версия {version} недействительна "
                              f"с {vt.strftime('%d.%m.%Y')}")
         return "; ".join(parts) + "."
+
+    def _create_quality_request(
+        self,
+        query: str,
+        user_id: str,
+        features: dict[str, float],
+        top_ids: list[int],
+        meta: dict[int, dict],
+    ) -> str | None:
+        """Кейс 1: создаёт запрос в службу качества, возвращает номер K-N.
+
+        Бриф: «должен создать запрос в службу качества компании».
+        Запрос сохраняет:
+          - текст вопроса (осознанное исключение из правила HMAC: без текста
+            сотрудник службы качества не ответит, а пользователь сам
+            отправляет вопрос — это согласие на обработку);
+          - что уже нашла система (топ-чанки), чтобы сотрудник не искал заново;
+          - признаки уверенности, чтобы понять, почему система отказала.
+        """
+        closest = []
+        for cid in top_ids[:3]:
+            m = meta.get(cid, {})
+            closest.append({
+                "doc_title": m.get("doc_title"),
+                "section_path": m.get("section_path"),
+                "section_title": m.get("section_title"),
+                "quote": (m.get("body") or "")[:300],
+            })
+        try:
+            conn = self._psycopg.connect(self.dsn, autocommit=False)
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO quality_requests
+                    (public_id, question, user_id_hash, closest_chunks,
+                     confidence, coverage)
+                VALUES (kb_next_quality_id(), %s, %s, %s::jsonb, %s, %s)
+                RETURNING public_id
+            """, (
+                query,
+                hashlib.sha256(f"{user_id}".encode()).hexdigest(),
+                json.dumps(closest, ensure_ascii=False),
+                features.get("max_sentence_sim"),
+                features.get("token_coverage"),
+            ))
+            public_id = cur.fetchone()[0]
+            conn.commit()
+            cur.close()
+            conn.close()
+            return public_id
+        except Exception:
+            return None
 
     def _pick_owner(self, tokens: list[str]) -> dict | None:
         """Подбирает владельца темы для рекомендации в отказе.
