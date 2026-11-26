@@ -202,7 +202,10 @@ def main() -> int:
     # (Проектная ДИБ п. 1.3, 2.1, 3.1, 7.3.1; ДБРЦТ п. 7.1).
     ap.add_argument("--smtp-host", default="127.0.0.1")
     ap.add_argument("--smtp-port", type=int, default=1025)
-    ap.add_argument("--email-to", default="", help="адрес получателя")
+    # Получателей может быть несколько: владелец темы, служба качества.
+    # ВАЖНО: адрес организаторов хакатона в получатели не ставим — это
+    # демонстрационный контур, а не их почта.
+    ap.add_argument("--email-to", default="", help="адреса через запятую")
     ap.add_argument("--dry-run", action="store_true",
                     help="не отправлять, только пометить sent и напечатать")
     # Telegram — fallback, включается только явно.
@@ -254,7 +257,7 @@ def main() -> int:
                 ok = True
             elif args.email_to:
                 ok = send_smtp(args.smtp_host, args.smtp_port,
-                               args.email_to, subject, body)
+                               ", ".join(to_list), subject, body)
             elif args.token:
                 ok = send_telegram(args.token, args.chat_id, body)
             else:
@@ -290,7 +293,7 @@ def main() -> int:
             elif args.email_to:
                 topic = (payload or {}).get("topic", "белое пятно")
                 ok = send_smtp(
-                    args.smtp_host, args.smtp_port, args.email_to,
+                    args.smtp_host, args.smtp_port, ", ".join(to_list),
                     f"Белое пятно в базе знаний: {topic[:60]}", text,
                 )
             elif args.token:

@@ -99,6 +99,28 @@ def main() -> int:
                 total += 1
                 gold = r.get("gold")
                 if gold:
+                    # Междокументные вопросы (п. 7.5 брифа): золото — НЕСКОЛЬКО
+                    # регламентов. Правильный ответ — цитата из любого из них,
+                    # поэтому chunk_ids объединяются: иначе eval занизил бы
+                    # Recall на таком золоте, посчитав верный ответ промахом.
+                    if gold.get("multi"):
+                        all_ids: list[int] = []
+                        ok = True
+                        for part in gold["multi"]:
+                            ids = find_chunks(cur, part["doc_title"],
+                                              part["section_path"])
+                            if ids:
+                                all_ids.extend(ids)
+                            else:
+                                ok = False
+                                unresolved.append(
+                                    f"{part['doc_title']} / {part['section_path']}")
+                        if all_ids:
+                            gold = dict(gold)
+                            gold["chunk_ids"] = sorted(set(all_ids))
+                            r["gold"] = gold
+                            resolved += 1
+                        continue
                     ids = find_chunks(cur, gold["doc_title"], gold["section_path"])
                     if ids:
                         gold = dict(gold)

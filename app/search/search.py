@@ -36,6 +36,7 @@ import numpy as np
 
 from app.search.encoder import acl_signature, to_pgvector
 from app.search.glossary import expand_phrases
+from app.search.translate import translate_terms
 from app.search.clarify import (
     Clarification,
     build_combined_query,
@@ -86,6 +87,14 @@ COVERAGE_GATE = 0.35
 #
 # Порог 0.45 отделяет «похоже» от «не похоже» по вероятности.
 TIER_MIN_CONFIDENCE = 0.45
+
+# Есть ли в тексте кириллица. Нужно, чтобы отличить англоязычный вопрос
+# (для него покрытие считается по переведённым терминам) от русского.
+_CYRILLIC = re.compile(r"[а-яёА-ЯЁ]")
+
+
+def _has_cyrillic(text: str) -> bool:
+    return bool(_CYRILLIC.search(text))
 
 
 @dataclass
@@ -552,8 +561,13 @@ class Searcher:
         # (если фраза не найдена, текст возвращается без изменений).
         # KB_GLOSSARY=0 отключает расширение — для A/B-замера «до/после».
         # По умолчанию включено.
-        expanded = (query if os.environ.get("KB_GLOSSARY") == "0"
-                    else expand_phrases(query))
+        # Англоязычный запрос: подставляем русские термины регламентов.
+        # Заказчик называет «who appoints the project manager» как рабочий
+        # паттерн, но корпус русский и FTS заточен под русский: без
+        # подстановки такой вопрос получает отказ.
+        q_for_search = translate_terms(query)
+        expanded = (q_for_search if os.environ.get("KB_GLOSSARY") == "0"
+                    else expand_phrases(q_for_search))
         # FTS — по расширенному (находит аббревиатуры), вектор — по
         # исходному (оценивает смысл вопроса). Смешивать нельзя:
         # косинус по расширению измеряет сходство с нашими добавками.
@@ -577,9 +591,13 @@ class Searcher:
         # действует сейчас и что было раньше, а не просто цитату.
         version_intent = has_version_intent(query)
 
+        # Покрытие: по исходным словам вопроса. Для англоязычного запроса
+        # исходные токены в русском корпусе не встречаются, и покрытие
+        # выходило 0 — гейт резал верный ответ. Берём переведённые.
+        cov_src = q_for_search if _has_cyrillic(query) is False else query
         fts_ids, vec_ids, meta, fts_and_hit = self._fetch_candidates(
             pq.tokens, qvec, acl, POOL_SIZE,
-            coverage_tokens=prepare(query).tokens,
+            coverage_tokens=prepare(cov_src).tokens,
         )
         rrf = rrf_fuse(fts_ids, vec_ids)
         top_ids = [cid for cid, _ in rrf[:RERANK_LIMIT]]
