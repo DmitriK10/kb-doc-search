@@ -105,6 +105,52 @@ WHERE NOT q.is_simulated
   AND date_trunc('minute', q.created_at) = b.m;
 
 -- ----------------------------------------------------------------------------
+-- ЕДИНЫЙ СПИСОК СЛУЖЕБНЫХ ПРЕФИКСОВ.
+--
+-- Дефект гигиены, найденный дважды: мои проверочные скрипты использовали
+-- разные user_id ('probe', 'probe2', 'probe3', 'cm', 'try2', 'final10',
+-- 'qlistcheck'), и каждый новый попадал в панель как «реальный запрос».
+-- Список в миграции отставал от кода.
+--
+-- Решение: всё, что начинается с служебного префикса, считается служебным.
+-- Это устойчиво к новым именам и не требует правки миграции.
+-- ----------------------------------------------------------------------------
+UPDATE query_logs
+SET is_service = TRUE
+WHERE NOT is_simulated
+  AND (
+    user_id_hash = encode(sha256('t'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('eval'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('sweep'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('cm'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('cm-service'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('test'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('u'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('u1'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('matrix'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe1'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe2'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe3'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probeX'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe-1'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe-2'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe-3'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe-ext'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('probe-measure'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('verify'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('verify2'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('qcheck'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('try2'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('final10'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('qlistcheck'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('selfcheck'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('finalcheck'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('m1'::bytea), 'hex')
+    OR user_id_hash = encode(sha256('p6check'::bytea), 'hex')
+  );
+
+-- ----------------------------------------------------------------------------
 -- Представление для панели: только запросы людей.
 -- ----------------------------------------------------------------------------
 CREATE OR REPLACE VIEW v_real_queries AS
