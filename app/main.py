@@ -68,7 +68,10 @@ app = FastAPI(title="KB — поиск ответов по корпоратив�
 
 class AskRequest(BaseModel):
     query: str = Field(..., min_length=2, max_length=500)
-    user_id: str = Field(default="web-demo", max_length=64)
+    user_id: str = Field(default="", max_length=64)
+    # Пустой user_id означает «клиент не прислал»: подставим web-demo.
+    # ВАЖНО: веб-клиент присылает свой анонимный session-id, поэтому
+    # респонденты различимы, а панель не смешивает их в одно ведро.
     acl: list[str] = Field(default_factory=lambda: ["all"])
 
 
@@ -168,10 +171,11 @@ async def metrics(days: int = 30) -> dict:
                     percentile_cont(0.95) WITHIN GROUP (ORDER BY latency_ms) AS p95,
                     coalesce(sum(CASE WHEN response_type <> 'refusal'
                                       THEN 60 - latency_ms / 60000.0
-                                      ELSE 0 END), 0) AS minutes_saved
+                                      ELSE 0 END), 0) AS minutes_saved,
+                    count(DISTINCT user_id_hash) AS sessions
                 FROM query_logs
                 WHERE created_at >= now() - make_interval(days => %s)
-                  AND is_simulated = false
+                  AND is_simulated = false AND NOT is_service
             """, (days,))
             r = cur.fetchone()
             total = r[0] or 0
@@ -189,6 +193,10 @@ async def metrics(days: int = 30) -> dict:
                 "p50_ms": round(float(r[7]), 1) if r[7] is not None else 0,
                 "p95_ms": round(float(r[8]), 1) if r[8] is not None else 0,
                 "hours_saved": round(float(r[9]) / 60.0, 1),
+                # Сколько разных сессий: показывает, сколько человек
+                # реально тестировало. Личных данных нет — случайный UUID
+                # в браузере, только для различения.
+                "sessions": int(r[10] or 0) if len(r) > 10 else 0,
             }
             cur.execute("""
                 SELECT refusal_reason, count(*)
@@ -213,6 +221,7 @@ async def metrics(days: int = 30) -> dict:
                        count(*) FILTER (WHERE cache_hit),
                        count(*) FILTER (WHERE response_type = 'success'
                                           AND low_confidence),
+                       count(DISTINCT user_id_hash),
                        coalesce(percentile_cont(0.5) WITHIN GROUP (
                            ORDER BY latency_ms), 0),
                        coalesce(sum(CASE WHEN response_type <> 'refusal'
@@ -241,8 +250,8 @@ async def metrics(days: int = 30) -> dict:
                 "cache_hits": d[6],
                 "useful_rate": (round(d[4] / (d[4] + d[5]), 4)
                                 if (d[4] + d[5]) else 0),
-                "p50_ms": round(float(d[8]), 1),
-                "hours_saved": round(float(d[9]) / 60.0, 1),
+                "p50_ms": round(float(d[9]), 1),
+                "hours_saved": round(float(d[10]) / 60.0, 1),
             }
             cur.close()
         return out
@@ -745,10 +754,25 @@ async function ask() {
   out.innerHTML = '<div class="card"><span class="spin"></span> Ищу…</div>';
 
   try {
+    // Анонимный session-id: случайный UUID в localStorage. Нужен, чтобы
+    // панель различала респондентов. Без него все запросы приходят под
+    // одним user_id, и нельзя сказать, 5 человек тестировали или 50.
+    // Личных данных не содержит: случайная строка в браузере.
+    let sid = '';
+    try {
+      sid = localStorage.getItem('kb_sid') || '';
+      if (!sid) {
+        sid = (window.crypto && crypto.randomUUID)
+          ? crypto.randomUUID()
+          : 'sid-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+        localStorage.setItem('kb_sid', sid);
+      }
+    } catch (e) { sid = 'anon'; }
+
     const r = await fetch(api('api/ask'), {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({query: q})
+      body: JSON.stringify({query: q, user_id: sid})
     });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
