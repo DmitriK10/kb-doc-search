@@ -123,6 +123,8 @@ def final_rank(
     coverage_weight: float = 0.12,
     number_match: dict[int, float] | None = None,
     number_weight: float = 0.18,
+    role_match: dict[int, float] | None = None,
+    role_weight: float = 0.0,
 ) -> list[tuple[int, float]]:
     """Итоговый порядок источников: смысловая близость + покрытие терминов.
 
@@ -156,12 +158,29 @@ def final_rank(
     Возвращает [(chunk_id, score)] по убыванию.
     """
     nm = number_match or {}
+    rm = role_match or {}
     scored = []
     for cid in candidate_ids:
         sim = rerank.get(cid, 0.0)
         cov = coverage.get(cid, 1.0)
         num = nm.get(cid, 1.0)
-        scored.append((cid, sim + coverage_weight * cov + number_weight * num))
+        # РОЛЬ: вес 0.0 — признак реализован, но НЕ включён.
+        #
+        # Замер на dev: с весом 0.22 и без него Recall@3 одинаков (38/59).
+        # На целевом случае («срок назначения руководителя проекта»)
+        # ранжирование внутри search() всё равно отдаёт 11.1 первым,
+        # хотя автономный замер ставит 9.1 на первое место. Значит порядок
+        # sources определяется не только final_rank, и включать вес без
+        # понимания этого механизма — публиковать непроверенное.
+        #
+        # Включать только после свипа и после разбора, почему порядок
+        # расходится. Пока признак документирован, но выключен.
+        rol = rm.get(cid, 0.5)
+        scored.append((
+            cid,
+            sim + coverage_weight * cov + number_weight * num
+            + role_weight * (rol - 0.5),
+        ))
     scored.sort(key=lambda kv: kv[1], reverse=True)
     return scored
 

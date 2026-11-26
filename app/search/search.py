@@ -903,7 +903,18 @@ class Searcher:
         # числовое совпадение — косинус суммы не различает.
         coverage = {cid: m.get("coverage", 1.0) for cid, m in meta.items()}
         number_match = self._number_match(query, top_ids, meta)
-        ranked = final_rank(rerank, coverage, top_ids, number_match=number_match)
+        # РОЛЬ: различает пункты, когда тема одна. На «срок назначения
+        # руководителя проекта» косинус выше у пункта про архитектора
+        # (короткий, весь про сроки), а правильный пункт весит 1129
+        # символов и ответ в нём тонет. Роль это различает.
+        from app.search.roles import role_match
+        role_scores = role_match(
+            query, {cid: meta.get(cid, {}).get("body", "") for cid in top_ids}
+        )
+        ranked = final_rank(
+            rerank, coverage, top_ids,
+            number_match=number_match, role_match=role_scores,
+        )
         ordered_ids = [cid for cid, _ in ranked]
         # ЗАРЕГИСТРИРОВАННАЯ развилка важнее даже уверенного ответа.
         #
