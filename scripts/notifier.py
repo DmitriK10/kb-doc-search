@@ -240,6 +240,12 @@ def main() -> int:
         """, (args.limit,))
         q_rows = cur.fetchall()
 
+        # Получатели: список адресов через запятую. Объявляется
+        # ОДИН раз до циклов — раньше использовался, но не был
+        # объявлен (NameError при первой же отправке).
+        to_list = [x.strip() for x in args.email_to.split(",")
+                   if x.strip()]
+
         sent = failed = 0
         for q in q_rows:
             public_id, question, closest, conf, cov = q
