@@ -1,22 +1,24 @@
 {
   "split": "test",
-  "n": 63,
+  "n": 69,
   "metrics": {
     "threshold": 0.2,
-    "recall@3": 0.8421,
-    "refusal_precision": 0.8571,
-    "refusal_recall": 0.8571,
-    "false_answers": 1,
-    "false_refusals": 10,
-    "n_in_scope": 38,
-    "n_out_scope": 7,
+    "recall@3": 0.675,
+    "refusal_precision": 0.8,
+    "refusal_recall": 0.8,
+    "false_answers": 2,
+    "false_refusals": 21,
+    "n_in_scope": 40,
+    "n_out_scope": 10,
+    "clarification_in_scope": 0,
+    "clarification_out_of_scope": 0,
     "low_confidence_answers": 15,
-    "tier_on_out_of_scope": 14,
-    "stale_questions": 4,
-    "stale_correct": 4,
-    "stale_accuracy": 1.0,
-    "p50_ms": 156.7,
-    "p95_ms": 210.0
+    "tier_on_out_of_scope": 11,
+    "stale_questions": 8,
+    "stale_correct": 6,
+    "stale_accuracy": 0.75,
+    "p50_ms": 282.7,
+    "p95_ms": 375.9
   },
   "details": [
     {
@@ -27,198 +29,327 @@
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.34567317366600037,
-        "top1_chunk_sim": 0.2292810625648115,
-        "margin": -0.06104278564453125,
-        "rrf_top": 0.5,
+        "max_sentence_sim": 0.45571595430374146,
+        "top1_chunk_sim": 0.4528454628920575,
+        "margin": -0.014624804258346558,
+        "rrf_top": 0.9621212121212123,
         "fts_exact": 0.0,
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 192.7,
+      "latency_ms": 341.3,
       "top_sources": []
     },
     {
-      "query": "сколько ждать обычную заявку в ИТ",
-      "out_of_scope": false,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.570001482963562,
-        "top1_chunk_sim": 0.4465228009157445,
-        "margin": 0.09941095113754272,
-        "rrf_top": 0.9540566959921798,
-        "fts_exact": 0.0,
-        "token_coverage": 0.2,
-        "blocked_by_coverage": 0.2,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 174.0,
-      "top_sources": [
-        {
-          "doc": "Регламент использования корпоративной связи",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "когда сдавать отчёт после командировки",
+      "query": "сколько лет хранят кадровые документы",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6586157083511353,
-        "top1_chunk_sim": 0.5374117672929625,
-        "margin": 0.15061354637145996,
+        "max_sentence_sim": 0.6553288102149963,
+        "top1_chunk_sim": 0.5423084151827698,
+        "margin": 0.18877822160720825,
         "rrf_top": 1.0,
         "fts_exact": 0.0,
-        "token_coverage": 0.6666666666666666,
+        "token_coverage": 0.6,
         "coverage_low": 0.0
       },
-      "latency_ms": 177.1,
+      "latency_ms": 305.6,
       "top_sources": [
         {
-          "doc": "Положение о служебных командировках",
-          "sec": "4.1"
+          "doc": "Регламент архивного хранения документов",
+          "sec": "2.2"
         },
         {
-          "doc": "Регламент оформления авансовых отчётов",
-          "sec": "2.1"
+          "doc": "Регламент архивного хранения документов",
+          "sec": "1.1"
         },
         {
-          "doc": "Положение о дистанционной работе",
-          "sec": "3.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "23.1"
         }
       ]
     },
     {
-      "query": "как быстро чинят критичные сбои",
+      "query": "сколько рассматривают заявку на закупку",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6012952327728271,
+        "top1_chunk_sim": 0.453509705860055,
+        "margin": 0.0368998646736145,
+        "rrf_top": 0.9041501976284585,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 375.9,
+      "top_sources": [
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "6.5"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "16.4.1"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "2.1.2"
+        }
+      ]
+    },
+    {
+      "query": "как не реже одного раза в квартал",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.7744275331497192,
+        "top1_chunk_sim": 0.5277815405408403,
+        "margin": 0.32309791445732117,
+        "rrf_top": 1.0,
+        "fts_exact": 1.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 259.3,
+      "top_sources": [
+        {
+          "doc": "Регламент предоставления доступа к информационным системам",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Регламент проведения медицинских осмотров",
+          "sec": "2.2"
+        },
+        {
+          "doc": "Регламент проведения инструктажей по охране труда",
+          "sec": "2.2"
+        }
+      ]
+    },
+    {
+      "query": "кто подписывал агентский договор по версии 2.3",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "stale",
+      "low_confidence": false,
+      "is_stale": true,
+      "features": {
+        "max_sentence_sim": 0.6133642196655273,
+        "top1_chunk_sim": 0.6674930288965968,
+        "margin": -0.006194591522216797,
+        "rrf_top": 0.9261559696342305,
+        "fts_exact": 0.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 356.6,
+      "top_sources": [
+        {
+          "doc": "Положение о дистанционной работе",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "4.2"
+        },
+        {
+          "doc": "Регламент использования электронной подписи",
+          "sec": "2.2"
+        }
+      ]
+    },
+    {
+      "query": "не позднее какого срока не позднее чем за 14 календарных дней до начала",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6734296083450317,
+        "top1_chunk_sim": 0.5613225383518357,
+        "margin": -2.9325485229492188e-05,
+        "rrf_top": 0.9684979838709676,
+        "fts_exact": 0.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 422.7,
+      "top_sources": [
+        {
+          "doc": "Положение об отпусках",
+          "sec": "2.2"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "11.1"
+        },
+        {
+          "doc": "Регламент оформления авансовых отчётов",
+          "sec": "2.1"
+        }
+      ]
+    },
+    {
+      "query": "можно ли править типовой NDA",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.4463030695915222,
-        "top1_chunk_sim": 0.3346347814415991,
-        "margin": 0.017726272344589233,
-        "rrf_top": 0.9919354838709679,
+        "max_sentence_sim": 0.5328567624092102,
+        "top1_chunk_sim": 0.43560332482532704,
+        "margin": 0.191663920879364,
+        "rrf_top": 0.9765625000000001,
+        "fts_exact": 0.0,
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 230.9,
+      "top_sources": [
+        {
+          "doc": "Регламент работы с соглашениями о конфиденциальности",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Регламент работы с соглашениями о конфиденциальности",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "2.3"
+        }
+      ]
+    },
+    {
+      "query": "сколько времени даётся на не позднее чем за 14 календарных дней до начала",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.7738959789276123,
+        "top1_chunk_sim": 0.5868148239074661,
+        "margin": 0.13244998455047607,
+        "rrf_top": 1.0,
+        "fts_exact": 0.0,
+        "token_coverage": 0.42857142857142855,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 296.4,
+      "top_sources": [
+        {
+          "doc": "Положение об отпусках",
+          "sec": "2.2"
+        },
+        {
+          "doc": "Регламент изменения штатного расписания",
+          "sec": "2.3"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "11.1"
+        }
+      ]
+    },
+    {
+      "query": "какой срок уплаты налога на прибыль",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5049511194229126,
+        "top1_chunk_sim": 0.45974147668791776,
+        "margin": 0.026563644409179688,
+        "rrf_top": 0.938683712121212,
         "fts_exact": 0.0,
         "token_coverage": 0.25,
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 151.4,
+      "latency_ms": 253.1,
       "top_sources": [
         {
-          "doc": "Регламент управления изменениями в ИТ-системах",
-          "sec": "2.2"
+          "doc": "Регламент оформления авансовых отчётов",
+          "sec": "1.1"
         },
         {
-          "doc": "Регламент расторжения договоров",
+          "doc": "Положение о служебных командировках",
           "sec": "3.1"
         },
         {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "2.1"
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "12.1"
         }
       ]
     },
     {
-      "query": "как оформить счёт-фактуру на аванс",
+      "query": "как оформить доверенность на подписание договоров",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.4995484948158264,
+        "top1_chunk_sim": 0.5990234775981464,
+        "margin": 0.0003867149353027344,
+        "rrf_top": 0.9457932692307692,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 281.2,
+      "top_sources": [
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "8.5"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "8.3.3"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "9.1"
+        }
+      ]
+    },
+    {
+      "query": "кто отвечает за охрану труда на складе",
       "out_of_scope": true,
       "hit": false,
       "response_type": "refusal",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5636604428291321,
-        "top1_chunk_sim": 0.5049338536551657,
-        "margin": 0.06049138307571411,
-        "rrf_top": 0.5,
+        "max_sentence_sim": 0.563143253326416,
+        "top1_chunk_sim": 0.5651557047551744,
+        "margin": -0.013614177703857422,
+        "rrf_top": 0.8860759493670887,
         "fts_exact": 0.0,
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 212.2,
+      "latency_ms": 300.0,
       "top_sources": []
-    },
-    {
-      "query": "кто оплачивает визу для зарубежной командировки",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.47574055194854736,
-        "top1_chunk_sim": 0.4496227600603738,
-        "margin": -0.03550004959106445,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 152.7,
-      "top_sources": [
-        {
-          "doc": "Положение о служебных командировках",
-          "sec": "4.2"
-        },
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент приёмки товаров и услуг",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "что нужно чтобы дополнительным соглашением",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5539268255233765,
-        "top1_chunk_sim": 0.4528125162792871,
-        "margin": -0.017925381660461426,
-        "rrf_top": 1.0,
-        "fts_exact": 1.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 136.5,
-      "top_sources": [
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент расторжения договоров",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение об отпусках",
-          "sec": "3.2"
-        }
-      ]
     },
     {
       "query": "где лежат печати",
@@ -236,7 +367,7 @@
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 146.9,
+      "latency_ms": 174.1,
       "top_sources": [
         {
           "doc": "Инструкция по использованию печатей и штампов",
@@ -253,69 +384,471 @@
       ]
     },
     {
-      "query": "какие чеки нужны к авансовому отчёту",
+      "query": "как выбрать перевозчика",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "refusal",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5255615711212158,
+        "top1_chunk_sim": 0.4073079708281906,
+        "margin": 0.0703997015953064,
+        "rrf_top": 0.9692307692307693,
+        "fts_exact": 0.0,
+        "token_coverage": 0.0,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 349.3,
+      "top_sources": []
+    },
+    {
+      "query": "как получить пропуск в офис для подрядчика",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6240091919898987,
+        "top1_chunk_sim": 0.5230048210438724,
+        "margin": 0.09300404787063599,
+        "rrf_top": 0.875897435897436,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 328.3,
+      "top_sources": [
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "12.3"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "2.1.3"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "12.5"
+        }
+      ]
+    },
+    {
+      "query": "когда вернут деньги за билеты",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "refusal",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.22600898146629333,
+        "top1_chunk_sim": 0.1944732560506166,
+        "margin": -0.3461717665195465,
+        "rrf_top": 0.5,
+        "fts_exact": 0.0,
+        "token_coverage": 0.3333333333333333,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 278.3,
+      "top_sources": []
+    },
+    {
+      "query": "что было в регламенте договоров версии 2.3",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "stale",
+      "low_confidence": false,
+      "is_stale": true,
+      "features": {
+        "max_sentence_sim": 0.6267913579940796,
+        "top1_chunk_sim": 0.6268452558891939,
+        "margin": 0.012692689895629883,
+        "rrf_top": 0.9313519813519814,
+        "fts_exact": 0.0,
+        "token_coverage": 0.6666666666666666,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 269.9,
+      "top_sources": [
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "4.1"
+        },
+        {
+          "doc": "Положение о дистанционной работе",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "2.3"
+        }
+      ]
+    },
+    {
+      "query": "какая подпись нужна для договора",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6203563213348389,
-        "top1_chunk_sim": 0.5231467558202125,
-        "margin": -0.0559922456741333,
-        "rrf_top": 0.9841269841269842,
+        "max_sentence_sim": 0.583514928817749,
+        "top1_chunk_sim": 0.48551173770185674,
+        "margin": 0.0912519097328186,
+        "rrf_top": 0.9357142857142857,
         "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 197.5,
+      "latency_ms": 217.2,
       "top_sources": [
         {
-          "doc": "Регламент оформления авансовых отчётов",
-          "sec": "3.1"
+          "doc": "Регламент использования электронной подписи",
+          "sec": "2.2"
         },
         {
-          "doc": "Положение о служебных командировках",
-          "sec": "4.2"
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "8.3.3"
         },
         {
-          "doc": "Регламент оформления авансовых отчётов",
-          "sec": "1.1"
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "8.5"
         }
       ]
     },
     {
-      "query": "как часто обновляют сертификат подписи",
+      "query": "размер суточных в командировке",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6530581712722778,
-        "top1_chunk_sim": 0.49226088438776006,
-        "margin": 0.18988260626792908,
+        "max_sentence_sim": 0.5241318345069885,
+        "top1_chunk_sim": 0.47938706461246006,
+        "margin": 0.012317836284637451,
         "rrf_top": 1.0,
+        "fts_exact": 1.0,
+        "token_coverage": 1.0,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 216.6,
+      "top_sources": [
+        {
+          "doc": "Положение о служебных командировках",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Положение о служебных командировках",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Регламент оформления авансовых отчётов",
+          "sec": "2.2"
+        }
+      ]
+    },
+    {
+      "query": "как оформить командировочное удостоверение за рубеж",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "refusal",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.483084112405777,
+        "top1_chunk_sim": 0.4282491699706771,
+        "margin": -0.008003562688827515,
+        "rrf_top": 0.8588235294117647,
+        "fts_exact": 0.0,
+        "token_coverage": 0.0,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 280.6,
+      "top_sources": []
+    },
+    {
+      "query": "почему регламент договоров переиздали в марте",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": true,
+      "features": {
+        "max_sentence_sim": 0.476030558347702,
+        "top1_chunk_sim": 0.4249606345325505,
+        "margin": 0.027991771697998047,
+        "rrf_top": 0.8943707191780821,
+        "fts_exact": 0.0,
+        "token_coverage": 0.4,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 359.3,
+      "top_sources": [
+        {
+          "doc": "Регламент архивного хранения документов",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Регламент расторжения договоров",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "1.1"
+        }
+      ]
+    },
+    {
+      "query": "за сколько дней оформляют командировку",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5916165113449097,
+        "top1_chunk_sim": 0.5465407823685208,
+        "margin": 0.037175893783569336,
+        "rrf_top": 1.0,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 309.5,
+      "top_sources": [
+        {
+          "doc": "Регламент корпоративного обучения",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Положение о служебных командировках",
+          "sec": "4.1"
+        },
+        {
+          "doc": "Положение об отпусках",
+          "sec": "2.2"
+        }
+      ]
+    },
+    {
+      "query": "какой бюджет на контекстную рекламу",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5179516077041626,
+        "top1_chunk_sim": 0.40021446689372575,
+        "margin": 0.15178149938583374,
+        "rrf_top": 0.8541911476694086,
+        "fts_exact": 0.0,
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 263.5,
+      "top_sources": [
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "14.3"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "16.10"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "7.9"
+        }
+      ]
+    },
+    {
+      "query": "чей подписью оформляется обязательство о неразглашении при приёме на работу",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6886779069900513,
+        "top1_chunk_sim": 0.5551719109734408,
+        "margin": 0.06848293542861938,
+        "rrf_top": 0.9198412698412697,
+        "fts_exact": 0.0,
+        "token_coverage": 0.16666666666666666,
+        "blocked_by_coverage": 0.16666666666666666,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 328.4,
+      "top_sources": [
+        {
+          "doc": "Положение о коммерческой тайне",
+          "sec": "2.3"
+        },
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "21.1"
+        },
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "2.13"
+        }
+      ]
+    },
+    {
+      "query": "как начислить амортизацию основного средства",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.463192343711853,
+        "top1_chunk_sim": 0.40168510408959057,
+        "margin": -0.08277881145477295,
+        "rrf_top": 0.8177083333333334,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 225.2,
+      "top_sources": [
+        {
+          "doc": "Регламент оформления авансовых отчётов",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "5.3"
+        },
+        {
+          "doc": "Положение о премировании",
+          "sec": "1.1"
+        }
+      ]
+    },
+    {
+      "query": "что будет за разглашение тайны",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5756473541259766,
+        "top1_chunk_sim": 0.4902679407053345,
+        "margin": 0.08506330847740173,
+        "rrf_top": 1.0,
+        "fts_exact": 1.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 176.0,
+      "top_sources": [
+        {
+          "doc": "Положение о коммерческой тайне",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Политика информационной безопасности",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Положение о коммерческой тайне",
+          "sec": "1.1"
+        }
+      ]
+    },
+    {
+      "query": "что делать при утечке персональных данных",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5074326992034912,
+        "top1_chunk_sim": 0.44307497397060125,
+        "margin": 0.05935212969779968,
+        "rrf_top": 0.8478764478764478,
         "fts_exact": 0.0,
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 163.3,
+      "latency_ms": 311.4,
       "top_sources": [
         {
-          "doc": "Регламент использования электронной подписи",
+          "doc": "Организация проектной деятельности",
+          "sec": "2.6"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "6.11"
+        },
+        {
+          "doc": "Политика информационной безопасности",
+          "sec": "3.1"
+        }
+      ]
+    },
+    {
+      "query": "дают ли премию если отработал меньше трёх месяцев",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6771339178085327,
+        "top1_chunk_sim": 0.533207148140226,
+        "margin": 0.08718734979629517,
+        "rrf_top": 1.0,
+        "fts_exact": 0.0,
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 273.5,
+      "top_sources": [
+        {
+          "doc": "Положение о премировании",
           "sec": "2.3"
         },
         {
           "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "3.1"
+          "sec": "2.3"
         },
         {
-          "doc": "Регламент делопроизводства",
-          "sec": "2.3"
+          "doc": "Регламент закупок товаров и услуг",
+          "sec": "2.2"
         }
       ]
+    },
+    {
+      "query": "как отозвать выданную доверенность",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "refusal",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.4147070348262787,
+        "top1_chunk_sim": 0.4334070241788116,
+        "margin": -0.020071297883987427,
+        "rrf_top": 0.8426966292134831,
+        "fts_exact": 0.0,
+        "token_coverage": 0.0,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 308.2,
+      "top_sources": []
     },
     {
       "query": "как рассчитать стоимость доставки",
@@ -325,353 +858,157 @@
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.4801798462867737,
-        "top1_chunk_sim": 0.36925226434286995,
-        "margin": -0.04955148696899414,
-        "rrf_top": 0.8588235294117647,
+        "max_sentence_sim": 0.4269942045211792,
+        "top1_chunk_sim": 0.42512748115703514,
+        "margin": -0.10787618160247803,
+        "rrf_top": 0.8357732732732732,
         "fts_exact": 0.0,
         "token_coverage": 0.3333333333333333,
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 141.6,
+      "latency_ms": 267.5,
       "top_sources": [
         {
-          "doc": "Инструкция по использованию печатей и штампов",
-          "sec": "1.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "2.5"
         },
         {
-          "doc": "Регламент корпоративного обучения",
-          "sec": "1.1"
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "13.4"
         },
         {
-          "doc": "Регламент оформления авансовых отчётов",
-          "sec": "1.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "5.3"
         }
       ]
     },
     {
-      "query": "как часто проходят медосмотр",
+      "query": "когда документы сдают в архив",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5796170234680176,
-        "top1_chunk_sim": 0.5235625611693302,
-        "margin": 0.004199683666229248,
-        "rrf_top": 1.0,
+        "max_sentence_sim": 0.6173473596572876,
+        "top1_chunk_sim": 0.5620856237588979,
+        "margin": 0.05969017744064331,
+        "rrf_top": 0.9919354838709679,
         "fts_exact": 0.0,
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 137.2,
+      "latency_ms": 231.3,
       "top_sources": [
         {
-          "doc": "Регламент проведения медицинских осмотров",
+          "doc": "Регламент архивного хранения документов",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Регламент архивного хранения документов",
           "sec": "2.2"
         },
         {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент проведения медицинских осмотров",
-          "sec": "1.1"
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "29.9"
         }
       ]
     },
     {
-      "query": "как отмечают рабочее время",
+      "query": "при каком плане дают премию",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
-      "low_confidence": true,
+      "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5457370281219482,
-        "top1_chunk_sim": 0.40036216357406174,
-        "margin": 0.11674213409423828,
-        "rrf_top": 0.9919354838709679,
+        "max_sentence_sim": 0.5212496519088745,
+        "top1_chunk_sim": 0.447794346346825,
+        "margin": 0.08694088459014893,
+        "rrf_top": 0.9621212121212123,
         "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
       },
-      "latency_ms": 166.4,
+      "latency_ms": 306.5,
       "top_sources": [
         {
-          "doc": "Регламент учёта рабочего времени",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент учёта рабочего времени",
+          "doc": "Положение о премировании",
           "sec": "2.1"
         },
         {
-          "doc": "Регламент расторжения договоров",
-          "sec": "3.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "4.6"
+        },
+        {
+          "doc": "Положение о премировании",
+          "sec": "1.1"
         }
       ]
     },
     {
-      "query": "сколько ждать согласования договора",
+      "query": "как быстро чинят критичные сбои",
       "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.42313072085380554,
-        "top1_chunk_sim": 0.5582549390025624,
-        "margin": -0.1323428452014923,
-        "rrf_top": 0.9760624679979518,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 153.7,
-      "top_sources": [
-        {
-          "doc": "Регламент расторжения договоров",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "2.2"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "кто согласует аренду переговорной комнаты",
-      "out_of_scope": true,
       "hit": false,
       "response_type": "success",
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6115854978561401,
-        "top1_chunk_sim": 0.5296237063389782,
-        "margin": 0.08036160469055176,
-        "rrf_top": 0.9841269841269842,
+        "max_sentence_sim": 0.4463030695915222,
+        "top1_chunk_sim": 0.3346347814415991,
+        "margin": 0.013593614101409912,
+        "rrf_top": 0.9621212121212123,
         "fts_exact": 0.0,
         "token_coverage": 0.25,
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 181.2,
+      "latency_ms": 282.7,
       "top_sources": [
         {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Положение об отпусках",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Регламент расторжения договоров",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "когда закрывают табель",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.6309173107147217,
-        "top1_chunk_sim": 0.4331891153955,
-        "margin": 0.18922993540763855,
-        "rrf_top": 1.0,
-        "fts_exact": 1.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 152.3,
-      "top_sources": [
-        {
-          "doc": "Регламент учёта рабочего времени",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Регламент изменения штатного расписания",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "когда подписывают акт приёмки",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.6853208541870117,
-        "top1_chunk_sim": 0.5169062580980512,
-        "margin": 0.23180782794952393,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 1.0,
-        "token_coverage": 0.6666666666666666,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 152.0,
-      "top_sources": [
-        {
-          "doc": "Регламент приёмки товаров и услуг",
+          "doc": "Регламент управления изменениями в ИТ-системах",
           "sec": "2.2"
         },
         {
-          "doc": "Регламент приёмки товаров и услуг",
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "8.1"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "6.1"
+        }
+      ]
+    },
+    {
+      "query": "за сколько дней сдают авансовый отчёт",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5826367139816284,
+        "top1_chunk_sim": 0.498042999592038,
+        "margin": 0.006027519702911377,
+        "rrf_top": 0.953125,
+        "fts_exact": 0.0,
+        "token_coverage": 0.4,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 293.3,
+      "top_sources": [
+        {
+          "doc": "Регламент оформления авансовых отчётов",
           "sec": "1.1"
+        },
+        {
+          "doc": "Положение о служебных командировках",
+          "sec": "4.1"
         },
         {
           "doc": "Регламент оформления авансовых отчётов",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "можно ли ставить печать на пустом бланке",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.7056682109832764,
-        "top1_chunk_sim": 0.6017771039096241,
-        "margin": 0.1746949553489685,
-        "rrf_top": 1.0,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 130.2,
-      "top_sources": [
-        {
-          "doc": "Инструкция по использованию печатей и штампов",
-          "sec": "3.2"
-        },
-        {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Инструкция по использованию печатей и штампов",
           "sec": "2.1"
-        }
-      ]
-    },
-    {
-      "query": "как получить доступ к системе",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.716162383556366,
-        "top1_chunk_sim": 0.5607270256325877,
-        "margin": 0.20148628950119019,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 140.3,
-      "top_sources": [
-        {
-          "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о коммерческой тайне",
-          "sec": "2.2"
-        },
-        {
-          "doc": "Политика информационной безопасности",
-          "sec": "2.3"
-        }
-      ]
-    },
-    {
-      "query": "как оформить перевод на другую должность",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5299547910690308,
-        "top1_chunk_sim": 0.4637950613913506,
-        "margin": -0.09945547580718994,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 147.4,
-      "top_sources": [
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент использования корпоративной связи",
-          "sec": "2.3"
-        }
-      ]
-    },
-    {
-      "query": "сколько рассматривают заявку на закупку",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.4983072280883789,
-        "top1_chunk_sim": 0.39040716048181867,
-        "margin": 0.004233449697494507,
-        "rrf_top": 0.9684979838709676,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 148.8,
-      "top_sources": [
-        {
-          "doc": "Регламент закупок товаров и услуг",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "1.1"
         }
       ]
     },
@@ -692,7 +1029,7 @@
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 224.6,
+      "latency_ms": 263.9,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -709,39 +1046,6 @@
       ]
     },
     {
-      "query": "в какой срок юридическим департаментом",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.4802386462688446,
-        "top1_chunk_sim": 0.4625148704497819,
-        "margin": -0.009381413459777832,
-        "rrf_top": 0.9692307692307693,
-        "fts_exact": 1.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 176.2,
-      "top_sources": [
-        {
-          "doc": "Регламент претензионной работы",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент работы с соглашениями о конфиденциальности",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Регламент изменения штатного расписания",
-          "sec": "2.3"
-        }
-      ]
-    },
-    {
       "query": "какая версия регламента договоров была отменена",
       "out_of_scope": false,
       "hit": false,
@@ -751,21 +1055,21 @@
       "features": {
         "max_sentence_sim": 0.5153366327285767,
         "top1_chunk_sim": 0.4736874071789272,
-        "margin": -0.08432388305664062,
-        "rrf_top": 0.9765625000000001,
+        "margin": 0.022082149982452393,
+        "rrf_top": 0.9242424242424242,
         "fts_exact": 0.0,
         "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 210.0,
+      "latency_ms": 284.8,
       "top_sources": [
         {
           "doc": "Регламент расторжения договоров",
           "sec": "1.1"
         },
         {
-          "doc": "Регламент приёмки товаров и услуг",
-          "sec": "1.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "7.7"
         },
         {
           "doc": "Регламент согласования и подписания договоров",
@@ -774,111 +1078,320 @@
       ]
     },
     {
-      "query": "каким образом не реже одного раза в год",
+      "query": "какой срок согласования был по версии 2.3",
       "out_of_scope": false,
       "hit": false,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
+      "response_type": "stale",
+      "low_confidence": true,
+      "is_stale": true,
       "features": {
-        "max_sentence_sim": 0.6364227533340454,
-        "top1_chunk_sim": 0.4218259010685128,
-        "margin": -0.107613205909729,
-        "rrf_top": 0.9841269841269842,
+        "max_sentence_sim": 0.6550618410110474,
+        "top1_chunk_sim": 0.6076987570151978,
+        "margin": -0.023290634155273438,
+        "rrf_top": 0.9173450927182271,
         "fts_exact": 0.0,
-        "token_coverage": 0.6,
-        "coverage_low": 0.0
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
+        "coverage_low": 1.0
       },
-      "latency_ms": 164.3,
+      "latency_ms": 353.4,
       "top_sources": [
         {
-          "doc": "Регламент проведения медицинских осмотров",
+          "doc": "Регламент согласования и подписания договоров",
           "sec": "2.2"
         },
         {
           "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "3.1"
+          "sec": "2.2"
         },
         {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "2.2"
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "4.1"
         }
       ]
     },
     {
-      "query": "как часто проводят повторный инструктаж",
+      "query": "за сколько дней предупреждают о расторжении договора",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.4699130654335022,
+        "top1_chunk_sim": 0.48695794732504827,
+        "margin": -0.10869663953781128,
+        "rrf_top": 0.8702029334940726,
+        "fts_exact": 0.0,
+        "token_coverage": 0.2,
+        "blocked_by_coverage": 0.2,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 286.8,
+      "top_sources": [
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "8.7"
+        },
+        {
+          "doc": "Регламент расторжения договоров",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "11.1"
+        }
+      ]
+    },
+    {
+      "query": "сколько дней отпуска в год",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6077380180358887,
-        "top1_chunk_sim": 0.4910839426838247,
-        "margin": -0.0426902174949646,
+        "max_sentence_sim": 0.6164625287055969,
+        "top1_chunk_sim": 0.47507744915038375,
+        "margin": 0.041972339153289795,
         "rrf_top": 0.9919354838709679,
         "fts_exact": 0.0,
         "token_coverage": 0.75,
         "coverage_low": 0.0
       },
-      "latency_ms": 143.2,
+      "latency_ms": 272.0,
       "top_sources": [
         {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент проведения медицинских осмотров",
+          "doc": "Положение об отпусках",
           "sec": "2.2"
         },
         {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "1.1"
+          "doc": "Положение об отпусках",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Регламент расторжения договоров",
+          "sec": "3.1"
         }
       ]
     },
     {
-      "query": "кто утверждает фирменный стиль",
+      "query": "когда подписывают акт приёмки",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.685321033000946,
+        "top1_chunk_sim": 0.5169062580980512,
+        "margin": 0.07888740301132202,
+        "rrf_top": 0.9357142857142857,
+        "fts_exact": 1.0,
+        "token_coverage": 0.6666666666666666,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 250.9,
+      "top_sources": [
+        {
+          "doc": "Регламент приёмки товаров и услуг",
+          "sec": "2.2"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "19.4"
+        },
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "21.4"
+        }
+      ]
+    },
+    {
+      "query": "как оформить сверхурочную работу",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5255076289176941,
+        "top1_chunk_sim": 0.3774695694415906,
+        "margin": 0.07472139596939087,
+        "rrf_top": 0.8019801980198019,
+        "fts_exact": 0.0,
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 311.8,
+      "top_sources": [
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "21.4"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "5.3"
+        },
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "21.1"
+        }
+      ]
+    },
+    {
+      "query": "как быстро надо занести клиента в CRM",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.4948155879974365,
+        "top1_chunk_sim": 0.43413773897367713,
+        "margin": -0.018370091915130615,
+        "rrf_top": 0.8972528661042612,
+        "fts_exact": 0.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 318.6,
+      "top_sources": [
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "12.7"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "11.1"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "1.3"
+        }
+      ]
+    },
+    {
+      "query": "за сколько откатывают неудачное изменение",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "refusal",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.551525890827179,
+        "top1_chunk_sim": 0.4296356008221418,
+        "margin": 0.044213950634002686,
+        "rrf_top": 0.9137044489157166,
+        "fts_exact": 0.0,
+        "token_coverage": 0.0,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 352.6,
+      "top_sources": []
+    },
+    {
+      "query": "с какой суммы нужен тендер",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5249910950660706,
+        "top1_chunk_sim": 0.44346899525970374,
+        "margin": 0.017052412033081055,
+        "rrf_top": 0.9621212121212123,
+        "fts_exact": 0.0,
+        "token_coverage": 0.6666666666666666,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 258.1,
+      "top_sources": [
+        {
+          "doc": "Регламент закупок товаров и услуг",
+          "sec": "2.3"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "5#т1.2"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "5#т1.1"
+        }
+      ]
+    },
+    {
+      "query": "за сколько дней подают заявку на обучение",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5974801778793335,
+        "top1_chunk_sim": 0.48919127843828436,
+        "margin": 0.017935097217559814,
+        "rrf_top": 0.9919354838709679,
+        "fts_exact": 0.0,
+        "token_coverage": 0.4,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 316.6,
+      "top_sources": [
+        {
+          "doc": "Регламент корпоративного обучения",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "3.4"
+        },
+        {
+          "doc": "Положение об отпусках",
+          "sec": "2.2"
+        }
+      ]
+    },
+    {
+      "query": "как согласовать публикацию в соцсетях",
       "out_of_scope": true,
       "hit": false,
       "response_type": "refusal",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.4127157926559448,
-        "top1_chunk_sim": 0.35155252826610583,
-        "margin": 0.06832361221313477,
-        "rrf_top": 0.923611111111111,
+        "max_sentence_sim": 0.5095691680908203,
+        "top1_chunk_sim": 0.43475286125288803,
+        "margin": 0.10117080807685852,
+        "rrf_top": 0.9760624679979518,
         "fts_exact": 0.0,
         "token_coverage": 0.0,
         "coverage_low": 1.0
       },
-      "latency_ms": 165.0,
+      "latency_ms": 290.8,
       "top_sources": []
     },
     {
-      "query": "сколько действует NDA",
+      "query": "с какой даты действует версия 3.1 регламента",
       "out_of_scope": false,
       "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
+      "response_type": "stale",
+      "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.4644862413406372,
-        "top1_chunk_sim": 0.3896487746734818,
-        "margin": -0.013249754905700684,
-        "rrf_top": 0.9471593644679827,
+        "max_sentence_sim": 0.763069748878479,
+        "top1_chunk_sim": 0.6621594534760916,
+        "margin": 0.0021132230758666992,
+        "rrf_top": 0.9838709677419354,
         "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
+        "token_coverage": 0.75,
+        "coverage_low": 0.0
       },
-      "latency_ms": 145.9,
+      "latency_ms": 281.6,
       "top_sources": [
-        {
-          "doc": "Регламент работы с соглашениями о конфиденциальности",
-          "sec": "2.1"
-        },
         {
           "doc": "Регламент работы с соглашениями о конфиденциальности",
           "sec": "3.1"
@@ -886,70 +1399,255 @@
         {
           "doc": "Регламент согласования и подписания договоров",
           "sec": "4.1"
+        },
+        {
+          "doc": "Регламент приёмки товаров и услуг",
+          "sec": "2.2"
         }
       ]
     },
     {
-      "query": "сколько времени даётся на дополнительный отпуск не менее 3 календарных дней",
+      "query": "кто подписывает мелкие договоры до ста тысяч",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6747865676879883,
+        "top1_chunk_sim": 0.5434483634541074,
+        "margin": 0.0848131775856018,
+        "rrf_top": 0.961166253101737,
+        "fts_exact": 0.0,
+        "token_coverage": 0.2,
+        "blocked_by_coverage": 0.2,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 321.3,
+      "top_sources": [
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "5#т1.2"
+        },
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "5#т1.1"
+        }
+      ]
+    },
+    {
+      "query": "как оформить доверенность на получение товара",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "refusal",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5605165958404541,
+        "top1_chunk_sim": 0.5308961479786906,
+        "margin": -0.04459786415100098,
+        "rrf_top": 0.9471593644679827,
+        "fts_exact": 0.0,
+        "token_coverage": 0.0,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 384.2,
+      "top_sources": []
+    },
+    {
+      "query": "какие изменения в регламенте договоров с марта",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6624422073364258,
+        "top1_chunk_sim": 0.6460782719266438,
+        "margin": 0.07791340351104736,
+        "rrf_top": 0.9357142857142857,
+        "fts_exact": 0.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 233.9,
+      "top_sources": [
+        {
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Регламент архивного хранения документов",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Регламент изменения штатного расписания",
+          "sec": "1.1"
+        }
+      ]
+    },
+    {
+      "query": "как часто обновляют сертификат подписи",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.773009181022644,
-        "top1_chunk_sim": 0.7207534698324091,
-        "margin": -0.006028890609741211,
+        "max_sentence_sim": 0.6530581712722778,
+        "top1_chunk_sim": 0.49226088438776006,
+        "margin": 0.11976480484008789,
         "rrf_top": 1.0,
         "fts_exact": 0.0,
-        "token_coverage": 0.625,
+        "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 171.8,
+      "latency_ms": 207.2,
       "top_sources": [
         {
-          "doc": "Положение об отпусках",
-          "sec": "3.2"
+          "doc": "Регламент использования электронной подписи",
+          "sec": "2.3"
         },
         {
           "doc": "Регламент оформления авансовых отчётов",
-          "sec": "2.1"
+          "sec": "3.1"
         },
         {
-          "doc": "Положение о служебных командировках",
-          "sec": "4.1"
+          "doc": "Регламент архивного хранения документов",
+          "sec": "3.2"
         }
       ]
     },
     {
-      "query": "по какой версии регламента работали до марта 2026",
+      "query": "действует ли ещё регламент версии 2.3",
       "out_of_scope": false,
       "hit": false,
       "response_type": "stale",
       "low_confidence": false,
       "is_stale": true,
       "features": {
-        "max_sentence_sim": 0.5853376388549805,
-        "top1_chunk_sim": 0.5093372733456271,
-        "margin": 0.13362926244735718,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
+        "max_sentence_sim": 0.721389651298523,
+        "top1_chunk_sim": 0.6806451132563365,
+        "margin": 0.12315493822097778,
+        "rrf_top": 1.0,
+        "fts_exact": 1.0,
+        "token_coverage": 1.0,
         "coverage_low": 0.0
       },
-      "latency_ms": 190.7,
+      "latency_ms": 269.7,
       "top_sources": [
         {
           "doc": "Регламент согласования и подписания договоров",
           "sec": "4.1"
         },
         {
-          "doc": "Положение о дистанционной работе",
+          "doc": "Регламент управления изменениями в ИТ-системах",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Регламент предоставления доступа к информационным системам",
+          "sec": "2.2"
+        }
+      ]
+    },
+    {
+      "query": "какие пункты убрали из регламента при переходе на 3.1",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": true,
+      "features": {
+        "max_sentence_sim": 0.5310549736022949,
+        "top1_chunk_sim": 0.6141254963180063,
+        "margin": 0.03411203622817993,
+        "rrf_top": 0.9462481962481962,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 263.0,
+      "top_sources": [
+        {
+          "doc": "Положение об отпусках",
           "sec": "2.3"
         },
         {
-          "doc": "Регламент работы с соглашениями о конфиденциальности",
+          "doc": "Регламент управления изменениями в ИТ-системах",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Регламент изменения штатного расписания",
+          "sec": "1.1"
+        }
+      ]
+    },
+    {
+      "query": "в какой срок руководителем подразделения",
+      "out_of_scope": false,
+      "hit": true,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5185137391090393,
+        "top1_chunk_sim": 0.44395689320072707,
+        "margin": 0.10134625434875488,
+        "rrf_top": 0.8928418803418803,
+        "fts_exact": 1.0,
+        "token_coverage": 0.6666666666666666,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 227.0,
+      "top_sources": [
+        {
+          "doc": "Регламент изменения штатного расписания",
           "sec": "2.3"
+        },
+        {
+          "doc": "Регламент обработки заявок в ИТ-поддержку",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Регламент закупок товаров и услуг",
+          "sec": "3.2"
+        }
+      ]
+    },
+    {
+      "query": "как оформить возврат товара поставщику",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": false,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.5994255542755127,
+        "top1_chunk_sim": 0.4767654179602383,
+        "margin": 0.024806857109069824,
+        "rrf_top": 0.9621212121212123,
+        "fts_exact": 0.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
+      },
+      "latency_ms": 325.5,
+      "top_sources": [
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "14.2"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "27.1"
+        },
+        {
+          "doc": "Регламент приёмки товаров и услуг",
+          "sec": "3.1"
         }
       ]
     },
@@ -961,114 +1659,30 @@
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5185925960540771,
-        "top1_chunk_sim": 0.525298451369639,
-        "margin": 0.06005275249481201,
-        "rrf_top": 0.9420289855072463,
+        "max_sentence_sim": 0.5655893087387085,
+        "top1_chunk_sim": 0.45686274932640214,
+        "margin": 0.003968179225921631,
+        "rrf_top": 0.8928418803418803,
         "fts_exact": 0.0,
         "token_coverage": 0.3333333333333333,
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 162.5,
+      "latency_ms": 300.4,
       "top_sources": [
         {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "3.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "22.2"
         },
         {
-          "doc": "Регламент использования корпоративной связи",
-          "sec": "2.3"
+          "doc": "Организация проектной деятельности",
+          "sec": "8.2"
         },
         {
-          "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "2.1"
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "1.4"
         }
       ]
-    },
-    {
-      "query": "когда утверждают график отпусков",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.561919093132019,
-        "top1_chunk_sim": 0.4492875256118559,
-        "margin": -0.0323944091796875,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 1.0,
-        "token_coverage": 0.6666666666666666,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 131.0,
-      "top_sources": [
-        {
-          "doc": "Положение об отпусках",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Положение об отпусках",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент учёта рабочего времени",
-          "sec": "2.1"
-        }
-      ]
-    },
-    {
-      "query": "какие документы нужны для выезда за рубеж",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5096636414527893,
-        "top1_chunk_sim": 0.4385085891944792,
-        "margin": 0.023496925830841064,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 134.7,
-      "top_sources": [
-        {
-          "doc": "Положение о служебных командировках",
-          "sec": "4.2"
-        },
-        {
-          "doc": "Регламент использования электронной подписи",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент оформления авансовых отчётов",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "как оформить командировочное удостоверение за рубеж",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "refusal",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5406269431114197,
-        "top1_chunk_sim": 0.4907214597568219,
-        "margin": 0.031261980533599854,
-        "rrf_top": 0.5,
-        "fts_exact": 0.0,
-        "token_coverage": 0.0,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 195.8,
-      "top_sources": []
     },
     {
       "query": "за сколько дней пишут заявление на отпуск",
@@ -1080,73 +1694,21 @@
       "features": {
         "max_sentence_sim": 0.4693774878978729,
         "top1_chunk_sim": 0.4414451899662135,
-        "margin": -0.1466555893421173,
-        "rrf_top": 0.9838709677419354,
+        "margin": -0.022109150886535645,
+        "rrf_top": 0.9684979838709676,
         "fts_exact": 0.0,
         "token_coverage": 0.4,
         "coverage_low": 0.0
       },
-      "latency_ms": 154.2,
+      "latency_ms": 351.9,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
           "sec": "2.2"
         },
         {
-          "doc": "Положение о служебных командировках",
-          "sec": "4.1"
-        },
-        {
-          "doc": "Регламент расторжения договоров",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "кто согласует дорогое обучение",
-      "out_of_scope": false,
-      "hit": false,
-      "response_type": "refusal",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.46070563793182373,
-        "top1_chunk_sim": 0.3985675201836445,
-        "margin": -0.038200318813323975,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 0.0,
-        "token_coverage": 0.0,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 195.6,
-      "top_sources": []
-    },
-    {
-      "query": "за сколько дней оформляют командировку",
-      "out_of_scope": false,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5916165113449097,
-        "top1_chunk_sim": 0.5465407823685208,
-        "margin": 0.010812163352966309,
-        "rrf_top": 1.0,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 174.4,
-      "top_sources": [
-        {
-          "doc": "Регламент расторжения договоров",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент корпоративного обучения",
-          "sec": "2.1"
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "3.4"
         },
         {
           "doc": "Положение о служебных командировках",
@@ -1155,119 +1717,67 @@
       ]
     },
     {
-      "query": "кто разрешает полностью удалённую работу",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.568881630897522,
-        "top1_chunk_sim": 0.5319658931553619,
-        "margin": -0.01247638463973999,
-        "rrf_top": 0.961166253101737,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 156.6,
-      "top_sources": [
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "кто принимает решение о смене склада",
+      "query": "какой срок доставки до склада",
       "out_of_scope": true,
       "hit": false,
-      "response_type": "refusal",
-      "low_confidence": false,
+      "response_type": "success",
+      "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.4606286287307739,
-        "top1_chunk_sim": 0.377141508940511,
-        "margin": 0.1486140489578247,
-        "rrf_top": 0.8192918192918193,
-        "fts_exact": 0.0,
-        "token_coverage": 0.0,
+        "max_sentence_sim": 0.5930519104003906,
+        "top1_chunk_sim": 0.5116301247196621,
+        "margin": 0.061426520347595215,
+        "rrf_top": 0.9420289855072463,
+        "fts_exact": 1.0,
+        "token_coverage": 0.3333333333333333,
+        "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 185.3,
-      "top_sources": []
+      "latency_ms": 303.5,
+      "top_sources": [
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "7.2.3"
+        },
+        {
+          "doc": "Регламент делопроизводства",
+          "sec": "3.1"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "8.2"
+        }
+      ]
     },
     {
-      "query": "до какой суммы можно купить без тендера",
+      "query": "что нужно чтобы дополнительным соглашением",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6029380559921265,
-        "top1_chunk_sim": 0.5398519296283774,
-        "margin": 0.0968315601348877,
-        "rrf_top": 1.0,
-        "fts_exact": 0.0,
-        "token_coverage": 0.6666666666666666,
+        "max_sentence_sim": 0.5539268255233765,
+        "top1_chunk_sim": 0.4528125162792871,
+        "margin": -0.017925381660461426,
+        "rrf_top": 0.9838709677419354,
+        "fts_exact": 1.0,
+        "token_coverage": 0.5,
         "coverage_low": 0.0
       },
-      "latency_ms": 181.3,
+      "latency_ms": 187.9,
       "top_sources": [
         {
-          "doc": "Регламент закупок товаров и услуг",
+          "doc": "Положение о дистанционной работе",
           "sec": "2.1"
         },
         {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "5#т1.2"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "3.3"
-        }
-      ]
-    },
-    {
-      "query": "как начислить амортизацию основного средства",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.42215895652770996,
-        "top1_chunk_sim": 0.3809587159376898,
-        "margin": -0.16708838939666748,
-        "rrf_top": 0.8177083333333334,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 202.3,
-      "top_sources": [
-        {
-          "doc": "Регламент оформления авансовых отчётов",
+          "doc": "Регламент расторжения договоров",
           "sec": "1.1"
         },
         {
-          "doc": "Положение о премировании",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Положение о премировании",
-          "sec": "1.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "15.6"
         }
       ]
     },
@@ -1287,83 +1797,148 @@
         "token_coverage": 0.625,
         "coverage_low": 0.0
       },
-      "latency_ms": 175.6,
+      "latency_ms": 365.3,
       "top_sources": [
         {
           "doc": "Положение об отпусках",
           "sec": "3.2"
         },
         {
-          "doc": "Регламент работы с соглашениями о конфиденциальности",
-          "sec": "2.3"
-        },
-        {
           "doc": "Регламент оформления авансовых отчётов",
           "sec": "2.1"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "20.3"
         }
       ]
     },
     {
-      "query": "как быстро дают доступ к системе",
+      "query": "кто утверждает перечень коммерческой тайны",
       "out_of_scope": false,
       "hit": false,
       "response_type": "success",
-      "low_confidence": true,
+      "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6838606595993042,
-        "top1_chunk_sim": 0.5366584125108929,
-        "margin": 0.16352659463882446,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.25,
-        "blocked_by_coverage": 0.25,
-        "coverage_low": 1.0
+        "max_sentence_sim": 0.7720882296562195,
+        "top1_chunk_sim": 0.6605321586874331,
+        "margin": 0.17334896326065063,
+        "rrf_top": 0.9919354838709679,
+        "fts_exact": 1.0,
+        "token_coverage": 0.5,
+        "coverage_low": 0.0
       },
-      "latency_ms": 156.7,
+      "latency_ms": 260.7,
       "top_sources": [
         {
-          "doc": "Регламент предоставления доступа к информационным системам",
+          "doc": "Положение о коммерческой тайне",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Политика информационной безопасности",
           "sec": "1.1"
         },
         {
           "doc": "Положение о коммерческой тайне",
-          "sec": "2.2"
-        },
-        {
-          "doc": "Политика информационной безопасности",
-          "sec": "2.3"
+          "sec": "3.1"
         }
       ]
     },
     {
-      "query": "когда документы сдают в архив",
+      "query": "до какой суммы можно купить без тендера",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.6173473596572876,
-        "top1_chunk_sim": 0.5620856237588979,
-        "margin": -0.00870358943939209,
-        "rrf_top": 1.0,
+        "max_sentence_sim": 0.6029379963874817,
+        "top1_chunk_sim": 0.5398519296283774,
+        "margin": 0.08566546440124512,
+        "rrf_top": 0.9841269841269842,
         "fts_exact": 0.0,
         "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 208.7,
+      "latency_ms": 255.6,
       "top_sources": [
         {
-          "doc": "Регламент архивного хранения документов",
+          "doc": "Регламент закупок товаров и услуг",
+          "sec": "2.1"
+        },
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "14.5"
+        },
+        {
+          "doc": "Проектная деятельность ДБРЦТ (Департамента бизнес-решений и цифровой трансформации)",
+          "sec": "2.4"
+        }
+      ]
+    },
+    {
+      "query": "как получить аванс в валюте на загранкомандировку",
+      "out_of_scope": true,
+      "hit": false,
+      "response_type": "success",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.4406443238258362,
+        "top1_chunk_sim": 0.39137158050463405,
+        "margin": -0.05955547094345093,
+        "rrf_top": 0.863095238095238,
+        "fts_exact": 0.0,
+        "token_coverage": 0.25,
+        "blocked_by_coverage": 0.25,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 233.6,
+      "top_sources": [
+        {
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "6.5"
+        },
+        {
+          "doc": "Положение о служебных командировках",
           "sec": "3.1"
         },
         {
-          "doc": "Регламент архивного хранения документов",
-          "sec": "2.2"
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "13.1"
+        }
+      ]
+    },
+    {
+      "query": "изменился ли порядок согласования договоров в версии 3.1",
+      "out_of_scope": false,
+      "hit": false,
+      "response_type": "stale",
+      "low_confidence": true,
+      "is_stale": false,
+      "features": {
+        "max_sentence_sim": 0.6444767713546753,
+        "top1_chunk_sim": 0.6884911239192023,
+        "margin": -0.09737467765808105,
+        "rrf_top": 0.8988082340195017,
+        "fts_exact": 0.0,
+        "token_coverage": 0.2,
+        "blocked_by_coverage": 0.2,
+        "coverage_low": 1.0
+      },
+      "latency_ms": 338.6,
+      "top_sources": [
+        {
+          "doc": "Организация проектной деятельности",
+          "sec": "7.7"
         },
         {
-          "doc": "Инструкция по использованию печатей и штампов",
+          "doc": "Регламент согласования и подписания договоров",
+          "sec": "1.1"
+        },
+        {
+          "doc": "Положение о дистанционной работе",
           "sec": "2.1"
         }
       ]
@@ -1376,600 +1951,177 @@
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5599114298820496,
-        "top1_chunk_sim": 0.41849467736841284,
-        "margin": 0.15731775760650635,
-        "rrf_top": 0.8505747126436781,
+        "max_sentence_sim": 0.5487773418426514,
+        "top1_chunk_sim": 0.5043747657778844,
+        "margin": 0.030568480491638184,
+        "rrf_top": 0.9185914855072463,
         "fts_exact": 0.0,
         "token_coverage": 0.25,
         "blocked_by_coverage": 0.25,
         "coverage_low": 1.0
       },
-      "latency_ms": 165.0,
+      "latency_ms": 271.9,
       "top_sources": [
         {
           "doc": "Регламент приёмки товаров и услуг",
           "sec": "2.2"
         },
         {
-          "doc": "Регламент расторжения договоров",
-          "sec": "1.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "14.2"
         },
         {
-          "doc": "Регламент приёмки товаров и услуг",
-          "sec": "1.1"
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "29.8"
         }
       ]
     },
     {
-      "query": "при каком плане дают премию",
+      "query": "how many subcontractors does TPS request",
       "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5212496519088745,
-        "top1_chunk_sim": 0.447794346346825,
-        "margin": 0.07596668601036072,
-        "rrf_top": 1.0,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 154.0,
-      "top_sources": [
-        {
-          "doc": "Положение о премировании",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Положение о премировании",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент приёмки товаров и услуг",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "какой срок доставки до склада",
-      "out_of_scope": true,
       "hit": false,
       "response_type": "success",
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5930519104003906,
-        "top1_chunk_sim": 0.5116301247196621,
-        "margin": 0.061426520347595215,
-        "rrf_top": 0.9841269841269842,
+        "max_sentence_sim": 0.6141736507415771,
+        "top1_chunk_sim": 0.5893728433130644,
+        "margin": 0.1484302282333374,
+        "rrf_top": 0.9066666666666666,
         "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
+        "token_coverage": 0.125,
+        "blocked_by_coverage": 0.125,
         "coverage_low": 1.0
       },
-      "latency_ms": 154.7,
+      "latency_ms": 381.7,
       "top_sources": [
         {
-          "doc": "Регламент делопроизводства",
-          "sec": "3.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "2.11"
         },
         {
-          "doc": "Регламент работы с соглашениями о конфиденциальности",
-          "sec": "3.1"
+          "doc": "Организация проектной деятельности",
+          "sec": "2.16"
         },
         {
-          "doc": "Регламент архивного хранения документов",
-          "sec": "2.1"
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "15.1.1"
         }
       ]
     },
     {
-      "query": "какая подпись нужна для договора",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5044557452201843,
-        "top1_chunk_sim": 0.5105621210674599,
-        "margin": -0.1888255476951599,
-        "rrf_top": 0.9760624679979518,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 168.6,
-      "top_sources": [
-        {
-          "doc": "Регламент использования электронной подписи",
-          "sec": "2.2"
-        },
-        {
-          "doc": "Регламент использования электронной подписи",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "5#т1.1"
-        }
-      ]
-    },
-    {
-      "query": "кто расследует инцидент ИБ",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.3700833022594452,
-        "top1_chunk_sim": 0.3302327858864085,
-        "margin": -0.1142779290676117,
-        "rrf_top": 0.9013157894736842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 132.5,
-      "top_sources": [
-        {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент приёмки товаров и услуг",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Регламент претензионной работы",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "кто подписывает договор на среднюю сумму",
+      "query": "когда утверждают график отпусков",
       "out_of_scope": false,
       "hit": true,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5451170206069946,
-        "top1_chunk_sim": 0.5745007288939713,
-        "margin": 0.027106404304504395,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 156.3,
-      "top_sources": [
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "2.1"
-        }
-      ]
-    },
-    {
-      "query": "кто подписывает агентский договор свыше миллиона",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.6566787958145142,
-        "top1_chunk_sim": 0.6148724754359004,
-        "margin": 0.01724708080291748,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.4,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 151.4,
-      "top_sources": [
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "3.2"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "5#т1.3"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "5#т1.2"
-        }
-      ]
-    },
-    {
-      "query": "что делают с доступом при увольнении",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.6360620260238647,
-        "top1_chunk_sim": 0.39925580141197337,
-        "margin": 0.07955873012542725,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 150.5,
-      "top_sources": [
-        {
-          "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Положение о коммерческой тайне",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "когда проводят вводный инструктаж",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.7466248273849487,
-        "top1_chunk_sim": 0.56142246976944,
-        "margin": -0.050002336502075195,
+        "max_sentence_sim": 0.561919093132019,
+        "top1_chunk_sim": 0.4492875256118559,
+        "margin": 0.07887506484985352,
         "rrf_top": 0.9919354838709679,
         "fts_exact": 1.0,
-        "token_coverage": 1.0,
+        "token_coverage": 0.6666666666666666,
         "coverage_low": 0.0
       },
-      "latency_ms": 163.6,
+      "latency_ms": 281.6,
       "top_sources": [
         {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент проведения инструктажей по охране труда",
+          "doc": "Положение об отпусках",
           "sec": "2.1"
-        },
-        {
-          "doc": "Регламент проведения инструктажей по охране труда",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "кто утверждает учётную политику",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5617297887802124,
-        "top1_chunk_sim": 0.4761539736875178,
-        "margin": 0.08077514171600342,
-        "rrf_top": 0.9919354838709679,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 206.5,
-      "top_sources": [
-        {
-          "doc": "Политика информационной безопасности",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о коммерческой тайне",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Регламент обработки заявок в ИТ-поддержку",
-          "sec": "1.1"
-        }
-      ]
-    },
-    {
-      "query": "кто согласует участие в выставке",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5518731474876404,
-        "top1_chunk_sim": 0.4443760312201982,
-        "margin": 0.0861445963382721,
-        "rrf_top": 0.9682539682539681,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 161.9,
-      "top_sources": [
-        {
-          "doc": "Регламент управления изменениями в ИТ-системах",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "2.3"
         },
         {
           "doc": "Положение об отпусках",
-          "sec": "2.3"
+          "sec": "1.1"
+        },
+        {
+          "doc": "Проектная деятельность Дирекции ИБ",
+          "sec": "21.2"
         }
       ]
     },
     {
-      "query": "какой лимит кассы на конец дня",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5292414426803589,
-        "top1_chunk_sim": 0.4403966886165862,
-        "margin": 0.045069992542266846,
-        "rrf_top": 0.9765625000000001,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 149.9,
-      "top_sources": [
-        {
-          "doc": "Регламент учёта рабочего времени",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент делопроизводства",
-          "sec": "3.1"
-        },
-        {
-          "doc": "Регламент учёта рабочего времени",
-          "sec": "3.1"
-        }
-      ]
-    },
-    {
-      "query": "как оформить инвентаризацию склада",
+      "query": "как учесть курсовые разницы",
       "out_of_scope": true,
       "hit": false,
       "response_type": "refusal",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5425136089324951,
-        "top1_chunk_sim": 0.49105568941025923,
-        "margin": -0.0259627103805542,
+        "max_sentence_sim": 0.44598421454429626,
+        "top1_chunk_sim": 0.325448567652998,
+        "margin": -0.07337489724159241,
         "rrf_top": 0.5,
         "fts_exact": 0.0,
-        "token_coverage": 0.0,
+        "token_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 156.5,
+      "latency_ms": 347.2,
       "top_sources": []
     },
     {
-      "query": "какой срок исковой давности по договору поставки",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.6121248006820679,
-        "top1_chunk_sim": 0.5525936966040994,
-        "margin": 0.012516677379608154,
-        "rrf_top": 0.9760624679979518,
-        "fts_exact": 0.0,
-        "token_coverage": 0.2,
-        "blocked_by_coverage": 0.2,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 159.4,
-      "top_sources": [
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "2.2"
-        },
-        {
-          "doc": "Регламент оформления авансовых отчётов",
-          "sec": "2.2"
-        },
-        {
-          "doc": "Регламент претензионной работы",
-          "sec": "2.2"
-        }
-      ]
-    },
-    {
-      "query": "с какой суммы нужен тендер",
+      "query": "каким образом не реже одного раза в год",
       "out_of_scope": false,
-      "hit": true,
+      "hit": false,
       "response_type": "success",
       "low_confidence": false,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.5249910950660706,
-        "top1_chunk_sim": 0.44346899525970374,
-        "margin": 0.017052412033081055,
-        "rrf_top": 0.9919354838709679,
+        "max_sentence_sim": 0.6364227533340454,
+        "top1_chunk_sim": 0.4218259010685128,
+        "margin": -0.107613205909729,
+        "rrf_top": 0.9533577533577533,
         "fts_exact": 0.0,
-        "token_coverage": 0.6666666666666666,
+        "token_coverage": 0.6,
         "coverage_low": 0.0
       },
-      "latency_ms": 136.6,
+      "latency_ms": 240.7,
       "top_sources": [
         {
-          "doc": "Регламент закупок товаров и услуг",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Инструкция по работе с CRM-системой",
-          "sec": "2.3"
-        },
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "5#т1.2"
-        }
-      ]
-    },
-    {
-      "query": "как оформить командировку за границу",
-      "out_of_scope": true,
-      "hit": false,
-      "response_type": "success",
-      "low_confidence": true,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.5016031861305237,
-        "top1_chunk_sim": 0.5060997044386866,
-        "margin": -0.045480549335479736,
-        "rrf_top": 1.0,
-        "fts_exact": 0.0,
-        "token_coverage": 0.3333333333333333,
-        "blocked_by_coverage": 0.3333333333333333,
-        "coverage_low": 1.0
-      },
-      "latency_ms": 133.9,
-      "top_sources": [
-        {
-          "doc": "Положение о дистанционной работе",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о служебных командировках",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о служебных командировках",
-          "sec": "2.1"
-        }
-      ]
-    },
-    {
-      "query": "когда утратила силу версия 2.3 регламента",
-      "out_of_scope": false,
-      "hit": false,
-      "response_type": "stale",
-      "low_confidence": false,
-      "is_stale": true,
-      "features": {
-        "max_sentence_sim": 0.6799446940422058,
-        "top1_chunk_sim": 0.5750382845197479,
-        "margin": 0.0412333607673645,
-        "rrf_top": 0.9841269841269842,
-        "fts_exact": 0.0,
-        "token_coverage": 0.5,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 216.9,
-      "top_sources": [
-        {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "4.1"
+          "doc": "Регламент проведения медицинских осмотров",
+          "sec": "2.2"
         },
         {
           "doc": "Регламент предоставления доступа к информационным системам",
-          "sec": "2.3"
+          "sec": "3.1"
         },
         {
-          "doc": "Регламент управления изменениями в ИТ-системах",
-          "sec": "2.1"
+          "doc": "Регламент проведения инструктажей по охране труда",
+          "sec": "2.2"
         }
       ]
     },
     {
-      "query": "кто согласует расторжение договора",
-      "out_of_scope": false,
+      "query": "как получить справку о доходах",
+      "out_of_scope": true,
       "hit": false,
       "response_type": "success",
       "low_confidence": true,
       "is_stale": false,
       "features": {
-        "max_sentence_sim": 0.48150768876075745,
-        "top1_chunk_sim": 0.60016187737361,
-        "margin": -0.29947349429130554,
-        "rrf_top": 0.9533577533577533,
+        "max_sentence_sim": 0.5361676216125488,
+        "top1_chunk_sim": 0.35575623386211963,
+        "margin": 0.04218682646751404,
+        "rrf_top": 0.9049450549450548,
         "fts_exact": 0.0,
         "token_coverage": 0.3333333333333333,
         "blocked_by_coverage": 0.3333333333333333,
         "coverage_low": 1.0
       },
-      "latency_ms": 139.7,
+      "latency_ms": 245.4,
       "top_sources": [
         {
-          "doc": "Регламент расторжения договоров",
-          "sec": "1.1"
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "6.5"
         },
         {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "1.1"
+          "doc": "Пресейловая деятельность Дирекции ИБ",
+          "sec": "13.3"
         },
         {
-          "doc": "Регламент согласования и подписания договоров",
-          "sec": "2.3"
-        }
-      ]
-    },
-    {
-      "query": "какой лимит на мобильную связь",
-      "out_of_scope": false,
-      "hit": true,
-      "response_type": "success",
-      "low_confidence": false,
-      "is_stale": false,
-      "features": {
-        "max_sentence_sim": 0.6250512599945068,
-        "top1_chunk_sim": 0.5071947787068624,
-        "margin": 0.10371780395507812,
-        "rrf_top": 1.0,
-        "fts_exact": 1.0,
-        "token_coverage": 1.0,
-        "coverage_low": 0.0
-      },
-      "latency_ms": 125.9,
-      "top_sources": [
-        {
-          "doc": "Регламент использования корпоративной связи",
-          "sec": "2.1"
-        },
-        {
-          "doc": "Регламент использования корпоративной связи",
-          "sec": "1.1"
-        },
-        {
-          "doc": "Положение о коммерческой тайне",
-          "sec": "3.1"
+          "doc": "Положение о служебных командировках",
+          "sec": "3.2"
         }
       ]
     }
