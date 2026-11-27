@@ -406,9 +406,23 @@ class Searcher:
             cov_tokens = coverage_tokens if coverage_tokens is not None else tokens
             cur.execute("""
                 WITH toks AS (
+                    -- lemmas — для знаменателя («есть ли содержательные
+                    -- слова»), origs — ИСХОДНЫЕ токены для to_tsquery.
+                    --
+                    -- ФИКС двойного стемминга: подавать в to_tsquery надо
+                    -- ИСХОДНЫЙ токен, не лемму. Лемма уже стеммирована,
+                    -- и повторный стемминг её укорачивает:
+                    --   kb_lemma('обучение') = 'обучен'
+                    --   to_tsquery('russian','обучен') = 'обуч'   <- другой!
+                    --   to_tsquery('russian','обучение') = 'обучен' <- верный
+                    -- В теле чанка лексема 'обучен', запрос искал 'обуч' —
+                    -- покрытие выходило 0.00, гейт резал верный ответ.
                     SELECT array_agg(DISTINCT kb_lemma(t)) FILTER (
                                WHERE kb_lemma(t) IS NOT NULL
-                           ) AS lemmas
+                           ) AS lemmas,
+                           array_agg(DISTINCT t) FILTER (
+                               WHERE kb_lemma(t) IS NOT NULL
+                           ) AS origs
                     FROM unnest(%s::text[]) AS t
                 )
                 SELECT c.id, c.section_path, c.section_title, c.h1_path, c.body,
@@ -417,7 +431,7 @@ class Searcher:
                        1 - (c.embedding <=> %s::halfvec(312)) AS chunk_sim,
                        (
                            SELECT count(*)::float
-                           FROM unnest(toks.lemmas) AS lem
+                           FROM unnest(toks.origs) AS orig
                            -- ВАЖНО: считаем по kb_tsv(c.body), БЕЗ заголовка.
                            -- Раньше было c.tsv, а он включает section_title
                            -- с весом A. Из-за этого чанк из раздела
@@ -427,8 +441,8 @@ class Searcher:
                            -- пункт «до 100 000 руб.» вместо «агентский,
                            -- свыше 1 млн». Заголовок помогает найти, но не
                            -- подтверждает содержание цитаты.
-                           WHERE kb_lemma(lem) IS NOT NULL
-                             AND kb_tsv(c.body) @@ to_tsquery('russian', lem)
+                           WHERE kb_lemma(orig) IS NOT NULL
+                             AND kb_tsv(c.body) @@ to_tsquery('russian', orig)
                        ) / NULLIF(cardinality(toks.lemmas), 0) AS coverage,
                        c.chunk_type
                 FROM chunks c
