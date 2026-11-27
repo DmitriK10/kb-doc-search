@@ -292,7 +292,16 @@ const get = u => new Promise((res, rej) =>
   if (CALC) {
     console.log('9: калькулятор');
     await send('Page.navigate', { url: 'file:///' + CALC.replace(/\\/g, '/') });
-    await sleep(4500);
+    await sleep(3500);
+    // Зум НЕ уменьшаем: кадр 1484x1052 целиком вписывается в 1600x1000
+    // по ширине и по высоте (max-height в CSS). Проверено по пикселям:
+    // контент доходит до 99% ширины исходного рендера, обрезки нет.
+    await evaluate(`(function(){
+      const img = document.querySelector('img');
+      if (img) { img.style.maxHeight = 'calc(100vh - 66px)'; }
+      return 'fit';
+    })()`);
+    await sleep(800);
     await caption('<span class="n">9/9</span>Экономика: 0 ₽ за токены — энкодер локальный, генерации нет');
     await sleep(8000);
     await caption('<span class="n">9/9</span>Облачная LLM ≈ 0.029 ₽/запрос ≈ 1400×. Главное — риск выхода текста за контур');
