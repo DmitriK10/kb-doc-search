@@ -66,6 +66,9 @@ def main() -> int:
     ap.add_argument("--model-dir", default="/opt/kb/models/rubert-tiny2-int8")
     ap.add_argument("--config", default="config/refusal.json")
     ap.add_argument("--out", default=None)
+    ap.add_argument("--gate", type=float, default=None,
+                    help="переопределить coverage gate (для свипа); "
+                         "по умолчанию COVERAGE_GATE=0.35")
     args = ap.parse_args()
 
     data_dir = Path(args.data_dir)
@@ -87,7 +90,8 @@ def main() -> int:
     details = []
 
     for r in rows:
-        ans = s.search(r["query"], user_id="cm-service", use_cache=False)
+        ans = s.search(r["query"], user_id="cm-service", use_cache=False,
+                       gate=args.gate)
 
         if r.get("is_stale"):
             stale_total += 1
@@ -117,6 +121,21 @@ def main() -> int:
         gold_ids = set((r.get("gold") or {}).get("chunk_ids") or [])
         hit = gold_in_sources(ans.sources, gold_ids)
         cls = classify(ans, gold_ids)
+
+        # ДЕФЕКТ ИЗМЕРЕНИЯ: у отказа sources ПУСТОЙ по построению —
+        # система не показывает цитату, когда отказывает. Поэтому
+        # gold_in_sources для отказа всегда False, и ячейка E (отказ,
+        # хотя золото было в топ-3) СТРУКТУРНО не могла стать ненулевой.
+        # Метрика «отказов при найденном gold = 0» была артефактом, а не
+        # фактом о качестве.
+        #
+        # Правильная дефиниция: смотрим, что нашёл ретривер ДО решения
+        # об отказе. Для этого повторяем поиск с gate=0.0 — это
+        # диагностический режим, он не влияет на выдачу пользователю.
+        if cls == "refusal" and gold_ids:
+            probe = s.search(r["query"], user_id="cm-service",
+                             use_cache=False, gate=0.0)
+            hit = gold_in_sources(probe.sources, gold_ids)
 
         if cls == "confident":
             if hit:
