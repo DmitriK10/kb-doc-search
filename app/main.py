@@ -691,6 +691,7 @@ INDEX_HTML = """<!DOCTYPE html>
   .ex span:hover { border-color:var(--acc); color:var(--txt); }
   .card { background:var(--card); border:1px solid var(--line); border-radius:11px;
         padding:18px; margin-top:18px; }
+  .b-acc { background:#1e3a5f; color:#8ab4f8; border:1px solid #2f5c8f; }
   .badge { display:inline-block; font-size:11px; padding:3px 9px; border-radius:11px;
         font-weight:600; letter-spacing:.02em; }
   .b-ok { background:rgba(47,158,110,.16); color:#5fd39b; }
@@ -842,7 +843,13 @@ function render(d) {
   // Тир: ответ найден, но совпадение терминов слабое. Показываем цитату,
   // но с явной пометкой — пользователь решает сам. Это не отказ:
   // отказ заставил бы его искать вручную, хотя ответ, возможно, рядом.
-  let badge = isTier
+  // Развилка — НЕ отказ: система приглашает уточнить, а не отказывает.
+  // Плашка «ЧЕСТНЫЙ ОТКАЗ» на развилке читалась как тупик, и пользователь
+  // уходил, не нажав кнопку (два прогона подряд: 5 развилок, 0 кликов).
+  const isClar = !!d.clarification;
+  let badge = isClar
+            ? '<span class="badge b-acc">НУЖНО УТОЧНЕНИЕ</span>'
+            : isTier
             ? '<span class="badge b-warn">НАЙДЕНО, ПРОВЕРЬТЕ ИСТОЧНИК</span>'
             : isOk ? '<span class="badge b-ok">НАЙДЕНО В ДОКУМЕНТЕ</span>'
             : isStale ? '<span class="badge b-warn">ВЕРСИЯ УСТАРЕЛА</span>'
@@ -881,6 +888,9 @@ function render(d) {
   } else if (d.clarification) {
     // КЕЙС 2: развилка. Варианты — из текста регламента, не придуманные.
     h += '<div class="meta">' + esc(d.clarification.question) + '</div>';
+    h += '<div class="meta" style="color:var(--acc);font-weight:600">' +
+         '↓ Нажмите подходящий вариант, чтобы получить цитату из регламента' +
+         '</div>';
     h += '<div class="fb" style="flex-wrap:wrap" id="clar">';
     const cid = d.clarification.clarify_id || '';
     const cfl = d.clarification.conflict_id || '';
