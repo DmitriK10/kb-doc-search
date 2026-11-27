@@ -463,21 +463,49 @@ async def clusters() -> dict:
             rows = cur.fetchall()
             cur.close()
 
+        # АГРЕГАЦИЯ ПО МЕТКЕ.
+        #
+        # k-means даёт 12 центроидов, но тем всего 5: «Отпуска» встречается
+        # 4 раза, «Доверенности» 3. На экране это выглядело как «12 белых
+        # пятен», хотя тем пять — пользователь видел дубликаты и не понимал,
+        # чем они отличаются.
+        #
+        # Пользователю нужны ТЕМЫ, не центроиды. Суммируем размеры,
+        # берём максимальную долю отказов, владельца и ближайший документ
+        # из самой крупной записи группы.
+        merged: dict[str, dict] = {}
+        for r in rows:
+            zone, label = r[0], r[1]
+            key = f"{zone}|{label}"
+            size = int(r[2] or 0)
+            if key not in merged:
+                merged[key] = {
+                    "zone": zone, "label": label, "size": size,
+                    "refusal_share": float(r[3] or 0),
+                    "useless_share": float(r[4] or 0),
+                    "owner_role": r[5], "status": r[6],
+                    "nearest_doc": r[7], "nearest_section": r[8],
+                    "_parts": 1,
+                }
+            else:
+                m = merged[key]
+                m["size"] += size
+                m["refusal_share"] = max(m["refusal_share"], float(r[3] or 0))
+                m["useless_share"] = max(m["useless_share"], float(r[4] or 0))
+                m["_parts"] += 1
+                if size > m["size"] - size:
+                    m["nearest_doc"] = r[7]
+                    m["nearest_section"] = r[8]
+
         zones: dict[str, int] = {}
         items = []
-        for r in rows:
-            zones[r[0]] = zones.get(r[0], 0) + 1
-            items.append({
-                "zone": r[0],
-                "label": r[1],
-                "size": r[2],
-                "refusal_share": round(float(r[3]), 3),
-                "useless_share": round(float(r[4]), 3),
-                "owner_role": r[5],
-                "status": r[6],
-                "nearest_doc": r[7],
-                "nearest_section": r[8],
-            })
+        for m in merged.values():
+            zones[m["zone"]] = zones.get(m["zone"], 0) + 1
+            m["refusal_share"] = round(m["refusal_share"], 3)
+            m["useless_share"] = round(m["useless_share"], 3)
+            m.pop("_parts", None)
+            items.append(m)
+        items.sort(key=lambda x: -x["size"])
 
         return {
             "run": {
