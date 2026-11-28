@@ -131,7 +131,14 @@ tier_on_oos        = H / (G + H + I)
 подписана «полная дефлексия». В расчётах экономии используется строгая:
 **183 ч/мес**. Оба числа честны при своих дефинициях — не путать.
 
-**Все метрики выводятся из confusion matrix** (`reports/confusion_test.json`).
+**Все метрики выводятся из confusion matrix.** Файл генерируется
+скриптом и в git не хранится (`reports/*.json` в `.gitignore`) —
+воспроизводится командой:
+
+```bash
+python scripts/confusion_matrix.py --dsn "$KB_DSN" --split test --out reports/confusion_test.json
+```
+
 Матрица test, пост-фикс:
 
 ```

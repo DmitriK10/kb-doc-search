@@ -1,0 +1,708 @@
+{
+  "split": "dev",
+  "matrix": {
+    "in_scope": {
+      "A": 32,
+      "B": 7,
+      "C": 8,
+      "D": 9,
+      "E": 0,
+      "F": 3,
+      "total": 59
+    },
+    "out_of_scope": {
+      "G": 3,
+      "H": 23,
+      "I": 4,
+      "total": 30
+    },
+    "stale": {
+      "correct": 8,
+      "total": 8
+    }
+  },
+  "metrics": {
+    "recall_at_3": 0.678,
+    "confident_recall": 0.5424,
+    "refusal_precision": 0.5714,
+    "refusals_at_found_gold": 0,
+    "confident_precision": 0.8205,
+    "in_scope_without_answer": 3,
+    "tier_on_out_of_scope": 0.7667,
+    "false_answers": 3,
+    "false_refusals": 3,
+    "stale_accuracy": 1.0
+  },
+  "details": [
+    {
+      "query": "кто отвечает за таможенное оформление",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "сколько исполняют срочный документ",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 0.25
+    },
+    {
+      "query": "сколько действует NDA",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 0.333
+    },
+    {
+      "query": "как письменным согласием сотрудника",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "как оформить командировку за границу",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "какая редакция регламента договоров была предыдущей",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "не позднее какого срока дополнительным соглашением к трудовому договору",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.429
+    },
+    {
+      "query": "когда утратила силу версия 2.3 регламента",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "не позднее какого срока руководителем подразделения",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.4
+    },
+    {
+      "query": "когда сдавать отчёт после командировки",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "4.1",
+      "cov": 0.667
+    },
+    {
+      "query": "за сколько дней инициируется заявка на пресейл",
+      "class": "in_scope",
+      "outcome": "refusal",
+      "gold_hit": false,
+      "gold_section": "1.5",
+      "cov": 0.6
+    },
+    {
+      "query": "кто готовит соглашение о конфиденциальности",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "2.1",
+      "cov": 0.667
+    },
+    {
+      "query": "как часто проводят повторный инструктаж",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.2",
+      "cov": 0.75
+    },
+    {
+      "query": "какие чеки нужны к авансовому отчёту",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 0.25
+    },
+    {
+      "query": "когда регистрируют входящие письма",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.667
+    },
+    {
+      "query": "сколько ждать согласования договора",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "2.2",
+      "cov": 0.5
+    },
+    {
+      "query": "сколько хранятся договоры",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.333
+    },
+    {
+      "query": "в какой срок юридическим департаментом",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "как оформить товарно-транспортную накладную",
+      "class": "out_of_scope",
+      "outcome": "refusal"
+    },
+    {
+      "query": "кто подписывает агентский договор свыше миллиона",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "3.2",
+      "cov": 0.8
+    },
+    {
+      "query": "сколько времени даётся на юридическим департаментом",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "2.1",
+      "cov": 0.2
+    },
+    {
+      "query": "как быстро дают доступ к системе",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "2.2",
+      "cov": 0.25
+    },
+    {
+      "query": "как оформить перевод на другую должность",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто расследует инцидент ИБ",
+      "class": "out_of_scope",
+      "outcome": "refusal"
+    },
+    {
+      "query": "кто разрешает полностью удалённую работу",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "2.3",
+      "cov": 0.25
+    },
+    {
+      "query": "когда вышла действующая версия регламента договоров",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "кто согласует расторжение договора",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.2",
+      "cov": 0.667
+    },
+    {
+      "query": "какой порядок письменным согласием сотрудника",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.75
+    },
+    {
+      "query": "до какого числа действовала версия 2.3",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "когда закрывают табель",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 1.0
+    },
+    {
+      "query": "сколько дней можно работать из дома",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "2.2",
+      "cov": 0.25
+    },
+    {
+      "query": "сколько действует доверенность на сделку",
+      "class": "out_of_scope",
+      "outcome": "refusal"
+    },
+    {
+      "query": "как оформить корпоративную сим-карту",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "какой лимит кассы на конец дня",
+      "class": "out_of_scope",
+      "outcome": "confident"
+    },
+    {
+      "query": "какой лимит на мобильную связь",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "как часто проходят медосмотр",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.2",
+      "cov": 0.667
+    },
+    {
+      "query": "какие поля обязательны в CRM",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "2.3",
+      "cov": 0.333
+    },
+    {
+      "query": "кто назначает руководителя проекта",
+      "class": "in_scope",
+      "outcome": "refusal",
+      "gold_hit": false,
+      "gold_section": "4.1",
+      "cov": 1.0
+    },
+    {
+      "query": "каким образом не реже одного раза в квартал",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 0.8
+    },
+    {
+      "query": "можно ли пользоваться личной флешкой",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 0.333
+    },
+    {
+      "query": "кто утверждает фирменный стиль",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "как оформить субсидиарную ответственность",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто утверждает учётную политику",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто согласует дорогое обучение",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "2.2",
+      "cov": 0.333
+    },
+    {
+      "query": "какой порядок не реже одного раза в год",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "2.1",
+      "cov": 0.8
+    },
+    {
+      "query": "кто согласует аренду переговорной комнаты",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "сколько составляет расходов на мобильную связь — 1500 рублей в месяц",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.714
+    },
+    {
+      "query": "чем отличалась версия 2.3 от текущей",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "who appoints the project manager",
+      "class": "in_scope",
+      "outcome": "refusal",
+      "gold_hit": false,
+      "gold_section": "2.1",
+      "cov": 0.25
+    },
+    {
+      "query": "в какой срок дополнительным соглашением к трудовому договору",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.8
+    },
+    {
+      "query": "как получить доступ к системе",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "2.3",
+      "cov": 0.333
+    },
+    {
+      "query": "с какого числа действует отмена версии 2.3",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "кто подписывает руководитель подразделения инициатора",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "3.1",
+      "cov": 0.25
+    },
+    {
+      "query": "какой срок исковой давности по договору поставки",
+      "class": "out_of_scope",
+      "outcome": "confident"
+    },
+    {
+      "query": "сколько времени даётся на дополнительный отпуск не менее 3 календарных дней",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "3.1",
+      "cov": 0.625
+    },
+    {
+      "query": "какие требования к паролю",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "2.1",
+      "cov": 0.5
+    },
+    {
+      "query": "кто подписывает обязательство о неразглашении при приёме на работу",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "кто подписывает договор на среднюю сумму",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "3.3",
+      "cov": 0.5
+    },
+    {
+      "query": "кто выписывает доверенность на представление интересов",
+      "class": "out_of_scope",
+      "outcome": "refusal"
+    },
+    {
+      "query": "кто проводит приёмку товара",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "когда проводят вводный инструктаж",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "what is the deadline for a presale request",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "1.5",
+      "cov": 0.125
+    },
+    {
+      "query": "как оформить счёт-фактуру на аванс",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "надо ли переоформлять договоры по новой версии регламента",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "чей подписью оформляется руководитель подразделения инициатора",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "3.1",
+      "cov": 0.2
+    },
+    {
+      "query": "как оформить больничный лист",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "как согласуют изменения в системе",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "какая сумма расходов на мобильную связь — 1500 рублей в месяц",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.833
+    },
+    {
+      "query": "кто подписывает бухгалтерскую отчётность",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "как отмечают рабочее время",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.667
+    },
+    {
+      "query": "сколько можно возместить ущерба",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.667
+    },
+    {
+      "query": "какой штраф за просрочку уплаты налога",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "по какой версии регламента работали до марта 2026",
+      "class": "stale",
+      "outcome": "stale",
+      "correct": true
+    },
+    {
+      "query": "можно ли ехать в лифте при эвакуации",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.3",
+      "cov": 0.667
+    },
+    {
+      "query": "как получить выписку из ЕГРЮЛ",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто оплачивает визу для зарубежной командировки",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "можно ли ставить печать на пустом бланке",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "3.2",
+      "cov": 0.75
+    },
+    {
+      "query": "какая редакция регламента договоров сейчас действует",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "4.1",
+      "cov": 0.5
+    },
+    {
+      "query": "что делать если не согласовали договор",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "2.3",
+      "cov": 0.667
+    },
+    {
+      "query": "в какой срок уведомить регулятора об утечке",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто принимает решение о смене склада",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "что делают с доступом при увольнении",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.3",
+      "cov": 0.667
+    },
+    {
+      "query": "сколько ждать ответа на претензию",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": true,
+      "gold_section": "2.2",
+      "cov": 0.25
+    },
+    {
+      "query": "как оформить возврат покупателю",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто оплачивает медосмотр",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.3",
+      "cov": 0.5
+    },
+    {
+      "query": "как рассчитать рентабельность продукта",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "как оформить инвентаризацию склада",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "сколько поставщиков надо для запроса предложений",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": false,
+      "gold_section": "2.2",
+      "cov": 0.5
+    },
+    {
+      "query": "сколько ждать обычную заявку в ИТ",
+      "class": "in_scope",
+      "outcome": "tier",
+      "gold_hit": false,
+      "gold_section": "2.3",
+      "cov": 0.2
+    },
+    {
+      "query": "как списать дебиторскую задолженность",
+      "class": "out_of_scope",
+      "outcome": "confident"
+    },
+    {
+      "query": "как сообщить об инциденте информационной безопасности",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "какие документы нужны для выезда за рубеж",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "кто согласует участие в выставке",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "какой размер компенсации за личный автомобиль",
+      "class": "out_of_scope",
+      "outcome": "tier"
+    },
+    {
+      "query": "что нужно чтобы не реже одного раза в год",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 1.0
+    },
+    {
+      "query": "что делать при пожаре",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "2.1",
+      "cov": 0.5
+    },
+    {
+      "query": "какой порядок дополнительным соглашением",
+      "class": "in_scope",
+      "outcome": "confident",
+      "gold_hit": true,
+      "gold_section": "1.1",
+      "cov": 0.667
+    }
+  ]
+}

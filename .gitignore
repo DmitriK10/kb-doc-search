@@ -28,6 +28,8 @@ reports/*.json
 !reports/smoke_db_*.json
 !reports/schema_*.json
 !reports/index_report.json
+# Матрицы ошибок: README на них ссылается — держим в git
+!reports/confusion_*.json
 
 # Корпус генерируется скриптом — не храним бинарники DOCX
 data/corpus/*.docx
