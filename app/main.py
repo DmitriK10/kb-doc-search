@@ -27,7 +27,7 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from app.search.encoder import Encoder
-from app.search.search import Searcher
+from app.search.search import COVERAGE_GATE, Searcher
 
 ROOT = Path(__file__).resolve().parents[1]
 CONFIG = ROOT / "config" / "refusal.json"
@@ -655,6 +655,9 @@ async def stats() -> dict:
     cfg = _state.get("config", {})
     out = {
         "threshold": cfg.get("threshold"),
+        # Второй порог каскада — покрытие терминов. Панель показывает
+        # оба, иначе расходится с отчётом, где рабочий параметр 0.35.
+        "coverage_gate": COVERAGE_GATE,
         "weights": cfg.get("weights"),
         "calibrated_on": cfg.get("calibrated_on"),
         "model": "cointegrated/rubert-tiny2 int8",
@@ -1152,7 +1155,7 @@ async function loadStats() {
         [(d.refusal_rate * 100).toFixed(0) + '%', 'отказов'],
         [d.p50_ms + ' мс', 'медиана'],
         [(d.stale_rate * 100).toFixed(1) + '%', 'версия устарела'],
-        [d.hours_saved + ' ч', 'сэкономлено'],
+        [d.hours_saved + ' ч', 'сэкономлено (полная дефлексия)'],
         [s.documents ? s.documents.filter(x => x.is_active).length : 0, 'документов']
       ].map(([v, k]) => '<div class="stat"><div class="v">' + esc(v) +
                         '</div><div class="k">' + esc(k) + '</div></div>').join('');
@@ -1217,10 +1220,16 @@ async function loadStats() {
         box.innerHTML = h;
       }
     } catch (e) { /* панель не критична */ }
+    // ДВА разных порога, оба нужны для исхода. Панель показывала только
+    // threshold (логистика, 0.20) и умалчивала про coverage gate (0.35) —
+    // отсюда расхождение с отчётом, где рабочий параметр 0.35.
+    // Уверенный ответ = p >= threshold И coverage >= gate.
     const cfgNote = s.threshold
-      ? 'Порог отказа ' + Number(s.threshold).toFixed(2) +
-        ', откалиброван на ' + esc(s.calibrated_on || '—') +
-        '. Модель: ' + esc(s.model) + ', ' + s.embedding_dim + ' измерений.'
+      ? 'Порог вероятности ' + Number(s.threshold).toFixed(2) +
+        ' (логистика, калибровка: ' + esc(s.calibrated_on || '—') + ')' +
+        ' + coverage gate ' + Number(s.coverage_gate || 0.35).toFixed(2) +
+        ' (покрытие терминов, выбрано свипом). Нужны оба.' +
+        ' Модель: ' + esc(s.model) + ', ' + s.embedding_dim + ' измерений.'
       : '';
     document.getElementById('note').textContent = cfgNote;
   } catch (e) { /* статистика не критична */ }
